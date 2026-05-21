@@ -19,6 +19,11 @@ class RecommendationVerdict(StrEnum):
     PARK = "park"
 
 
+class NotificationChannel(StrEnum):
+    EMAIL = "email"
+    SMS = "sms"
+
+
 class IdeaInput(BaseModel):
     row_id: str | None = Field(default=None, description="Source Excel row or external idea id.")
     title: str = Field(..., min_length=2, max_length=140)
@@ -52,6 +57,7 @@ class AnalysisConstraints(BaseModel):
     budget_usd: int = Field(default=500, ge=0, le=1_000_000)
     team_size: int = Field(default=1, ge=1, le=100)
     geography: str | None = None
+    launch_url: str | None = Field(default=None, description="Optional product landing or early-access URL.")
     channels_allowed: list[str] = Field(default_factory=list)
     risk_tolerance: str = Field(default="medium")
 
@@ -124,6 +130,17 @@ class AdCreative(BaseModel):
     cta: str
 
 
+class MarketingNotificationDraft(BaseModel):
+    channel: NotificationChannel
+    type: str = Field(..., description="Provider template or message type.")
+    audience: str
+    subject: str | None = None
+    body: str
+    html: str | None = None
+    cta: str
+    compliance_note: str
+
+
 class RealityCheck(BaseModel):
     biggest_assumption: str
     fastest_validation_test: str
@@ -147,7 +164,33 @@ class Agent3Response(BaseModel):
     gtm_channels: list[GTMChannel]
     growth_experiments: list[GrowthExperiment]
     advertisement_help: list[AdCreative]
+    marketing_notifications: list[MarketingNotificationDraft]
     final_recommendation: FinalRecommendation
     reality_check: RealityCheck
     next_actions: list[str]
     notes: list[str] = Field(default_factory=list)
+
+
+class MarketingContact(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+    marketing_consent: bool = Field(
+        default=False,
+        description="Must be true for real marketing email/SMS sends.",
+    )
+
+
+class MarketingSendRequest(BaseModel):
+    contact: MarketingContact
+    message: MarketingNotificationDraft
+    dry_run: bool = Field(default=True, description="Preview provider payload without sending.")
+
+
+class DeliveryResult(BaseModel):
+    provider: str
+    channel: NotificationChannel
+    dry_run: bool
+    status: str
+    payload: dict
+    provider_response: dict | str | None = None

@@ -6,7 +6,8 @@ service you are working on: **Agent Service 3, the Market + Growth Agent**.
 
 Agent 3 takes an idea plus upstream evaluation/planning context and produces
 marketability checks, inferred competitor pressure, GTM channels, growth
-experiments, advertisement angles, a final recommendation, and a reality check.
+experiments, advertisement angles, product launch marketing notifications, a
+final recommendation, and a reality check.
 
 The goal is speed: get the idea in front of real customers as fast as possible,
 then use evidence instead of vibes to decide whether to build, pivot, or stop.
@@ -24,6 +25,8 @@ Owned by Agent 3:
 - Go-to-market channels
 - Growth experiments
 - Advertisement help
+- Email/SMS product launch marketing notifications
+- Optional Pingram delivery for opted-in marketing contacts
 - Final recommendation
 - Reality check
 
@@ -53,6 +56,24 @@ python -m pip install -e ".[dev]"
 uvicorn agent3.main:app --reload
 ```
 
+Create a local `.env` from the example when you need provider keys:
+
+```bash
+cp .env.example .env
+```
+
+Supported environment variables:
+
+- `GOOGLE_CLOUD_API_KEY`: reserved for the future Google-backed LLM adapter.
+- `GOOGLE_CLOUD_PROJECT`: optional Google Cloud project id.
+- `PINGRAM_API_KEY`: Pingram server API key for sending email/SMS.
+- `PINGRAM_EMAIL_TYPE`: Pingram notification type for Agent 3 emails.
+- `PINGRAM_SMS_TYPE`: Pingram notification type for Agent 3 SMS.
+- `PINGRAM_SENDER_NAME`: optional email sender display name.
+- `PINGRAM_SENDER_EMAIL`: optional sender email address configured in Pingram.
+- `PINGRAM_DRY_RUN`: keep `true` in development; set `false` only when real
+  messages should be allowed.
+
 Health check:
 
 ```bash
@@ -79,6 +100,7 @@ curl -X POST http://127.0.0.1:8000/analyze \
       "timeline_days": 14,
       "budget_usd": 500,
       "team_size": 1,
+      "launch_url": "https://example.com/early-access",
       "risk_tolerance": "medium"
     }
   }'
@@ -95,8 +117,8 @@ Request:
   and clarification output.
 - `planning`: optional Agent 2 launch plan, positioning, ad copy, content calendar,
   and messaging output.
-- `constraints`: timeline, budget, team size, geography, allowed channels, and
-  risk tolerance.
+- `constraints`: timeline, budget, team size, geography, launch URL, allowed
+  channels, and risk tolerance.
 
 Response:
 
@@ -110,9 +132,46 @@ Response:
 - `growth_experiments`: concrete validation experiments with budget, duration,
   metrics, and decision rules.
 - `advertisement_help`: platform-ready ad angles and CTAs.
+- `marketing_notifications`: ready-to-send product launch email and SMS drafts.
 - `final_recommendation`: launch, validate first, pivot, or park.
 - `reality_check`: assumptions, fastest validation test, kill criteria, and risks.
 - `next_actions`: immediate execution checklist.
+
+## Marketing Delivery
+
+Agent 3 can produce product launch email/SMS drafts as part of `/analyze`. These
+are intended for notifying opted-in users that a new product is available or
+opening early access. To preview or send one through Pingram, call:
+
+```bash
+curl -X POST http://127.0.0.1:8000/marketing/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contact": {
+      "name": "Ada",
+      "email": "ada@example.com",
+      "marketing_consent": true
+    },
+    "message": {
+      "channel": "email",
+      "type": "agent3_product_launch_email",
+      "audience": "small agencies",
+      "subject": "New: AI invoice cleanup is opening early access",
+      "body": "AI invoice cleanup is opening early access for small agencies.",
+      "html": "<p>AI invoice cleanup is opening early access for small agencies.</p>",
+      "cta": "Join early access",
+      "compliance_note": "Send only to users who opted in to receive product or marketing updates."
+    },
+    "dry_run": true
+  }'
+```
+
+For SMS, use `"channel": "sms"` and provide `contact.phone_number` in E.164
+format, for example `+14165550123`.
+
+By default, requests are dry runs. To send real marketing messages, configure
+`PINGRAM_API_KEY`, set `PINGRAM_DRY_RUN=false`, send the request with
+`"dry_run": false`, and make sure `contact.marketing_consent` is `true`.
 
 ## Verify
 

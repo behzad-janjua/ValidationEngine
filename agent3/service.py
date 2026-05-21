@@ -14,7 +14,9 @@ from agent3.models import (
     FinalRecommendation,
     GTMChannel,
     GrowthExperiment,
+    MarketingNotificationDraft,
     MarketabilityCheck,
+    NotificationChannel,
     Priority,
     RealityCheck,
     RecommendationVerdict,
@@ -49,6 +51,7 @@ class Agent3Analyzer:
         channels = self._gtm_channels(request, text)
         experiments = self._growth_experiments(request, text, channels)
         ads = self._advertisement_help(request, marketability, channels, planning)
+        marketing_notifications = self._marketing_notifications(request, marketability, planning)
         competitors = self._competitor_scan(request, text)
         recommendation = self._final_recommendation(request, scorecard)
         reality_check = self._reality_check(request, text)
@@ -63,6 +66,7 @@ class Agent3Analyzer:
             gtm_channels=channels,
             growth_experiments=experiments,
             advertisement_help=ads,
+            marketing_notifications=marketing_notifications,
             final_recommendation=recommendation,
             reality_check=reality_check,
             next_actions=next_actions,
@@ -321,6 +325,54 @@ class Agent3Analyzer:
             ),
         ]
 
+    def _marketing_notifications(
+        self,
+        request: Agent3Request,
+        marketability: MarketabilityCheck,
+        planning: Agent2Planning,
+    ) -> list[MarketingNotificationDraft]:
+        title = request.idea.title.strip()
+        customer = marketability.target_customer
+        positioning = planning.positioning or marketability.strongest_message_angle
+        problem = request.idea.problem or "the old way takes too much time"
+        launch_destination = request.constraints.launch_url or "Reply to get early access."
+        launch_cta = "Join early access"
+
+        email_body = (
+            f"{title} is opening early access for {customer}.\n\n"
+            f"Why it exists: {problem}.\n\n"
+            f"What it helps with: {positioning}\n\n"
+            "We are inviting a small group of early users to try the product, share feedback, "
+            "and help shape the first public launch.\n\n"
+            f"{launch_destination}"
+        )
+
+        sms_body = (
+            f"New: {title} is opening early access for {customer}. "
+            f"If {problem} is relevant, {launch_destination}"
+        )
+
+        return [
+            MarketingNotificationDraft(
+                channel=NotificationChannel.EMAIL,
+                type="agent3_product_launch_email",
+                audience=customer,
+                subject=f"New: {title} is opening early access",
+                body=email_body,
+                html=self._email_html(email_body, launch_cta),
+                cta=launch_cta,
+                compliance_note="Send only to users who opted in to receive product or marketing updates.",
+            ),
+            MarketingNotificationDraft(
+                channel=NotificationChannel.SMS,
+                type="agent3_product_launch_sms",
+                audience=customer,
+                body=sms_body[:300],
+                cta="Join early access",
+                compliance_note="Send only to opted-in SMS contacts and include opt-out handling in production.",
+            ),
+        ]
+
     def _final_recommendation(self, request: Agent3Request, scorecard: Scorecard) -> FinalRecommendation:
         launch_score = round(
             mean(
@@ -491,6 +543,10 @@ class Agent3Analyzer:
         problem = request.idea.problem or "the painful part of the workflow"
         solution = request.idea.solution or request.idea.title
         return f"Help {customer} solve {problem} faster with {solution}."
+
+    def _email_html(self, body: str, cta: str) -> str:
+        paragraphs = "".join(f"<p>{line}</p>" for line in body.splitlines() if line.strip())
+        return f"{paragraphs}<p><strong>{cta}</strong></p>"
 
     def _is_b2b(self, text: str) -> bool:
         b2b_markers = {
