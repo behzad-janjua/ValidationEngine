@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from fastapi import HTTPException
 
-from agent3.config import Settings
-from agent3.models import DeliveryResult, MarketingSendRequest, NotificationChannel
+from agents.agent3.config import Settings
+from agents.agent3.models import DeliveryResult, MarketingSendRequest, NotificationChannel
 
 
 class PingramDeliveryClient:
@@ -21,6 +21,16 @@ class PingramDeliveryClient:
     async def send(self, request: MarketingSendRequest) -> DeliveryResult:
         payload = self._build_payload(request)
         dry_run = request.dry_run or self.settings.pingram_dry_run
+
+        if request.contact.opted_out:
+            return DeliveryResult(
+                provider=self.provider,
+                channel=request.message.channel,
+                dry_run=dry_run,
+                status="skipped",
+                payload=payload,
+                provider_response="Contact is opted out of marketing messages.",
+            )
 
         if dry_run:
             return DeliveryResult(
@@ -70,7 +80,10 @@ class PingramDeliveryClient:
                 raise HTTPException(status_code=422, detail="email is required for email marketing.")
             email_payload = {
                 "subject": message.subject or "New product early access",
-                "html": message.html or self._email_html(message.body, recipient_name, message.cta),
+                "html": self._email_with_unsubscribe(
+                    message.html or self._email_html(message.body, recipient_name, message.cta),
+                    request.unsubscribe_url,
+                ),
             }
             if self.settings.pingram_sender_name:
                 email_payload["senderName"] = self.settings.pingram_sender_name
@@ -93,13 +106,28 @@ class PingramDeliveryClient:
                 "number": contact.phone_number,
             },
             "sms": {
-                "message": message.body,
+                "message": self._sms_with_opt_out(message.body, request.unsubscribe_url),
             },
         }
 
     def _email_html(self, body: str, recipient_name: str, cta: str) -> str:
         paragraphs = "".join(f"<p>{line}</p>" for line in body.splitlines() if line.strip())
         return f"<p>Hi {recipient_name},</p>{paragraphs}<p>{cta}</p>"
+
+    def _email_with_unsubscribe(self, html: str, unsubscribe_url: str | None) -> str:
+        if not unsubscribe_url:
+            return f"{html}<p style=\"font-size:12px;color:#666;\">You are receiving this because you opted in to product updates.</p>"
+        return (
+            f"{html}"
+            "<p style=\"font-size:12px;color:#666;\">"
+            "You are receiving this because you opted in to product updates. "
+            f"<a href=\"{unsubscribe_url}\">Unsubscribe</a>."
+            "</p>"
+        )
+
+    def _sms_with_opt_out(self, message: str, unsubscribe_url: str | None) -> str:
+        suffix = f" Opt out: {unsubscribe_url}" if unsubscribe_url else " Reply STOP to opt out."
+        return f"{message}{suffix}"[:480]
 
     def _serialize_response(self, response: object) -> dict | str:
         if hasattr(response, "model_dump"):

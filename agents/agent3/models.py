@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -22,6 +23,21 @@ class RecommendationVerdict(StrEnum):
 class NotificationChannel(StrEnum):
     EMAIL = "email"
     SMS = "sms"
+
+
+class CampaignStatus(StrEnum):
+    DRAFTED = "drafted"
+    PREVIEWED = "previewed"
+    SENT = "sent"
+    PARTIAL = "partial"
+    FAILED = "failed"
+
+
+class DeliveryStatus(StrEnum):
+    PREVIEW = "preview"
+    SENT = "sent"
+    SKIPPED = "skipped"
+    FAILED = "failed"
 
 
 class IdeaInput(BaseModel):
@@ -70,11 +86,20 @@ class AnalysisConstraints(BaseModel):
         return normalized
 
 
+class UserInput(BaseModel):
+    notes: str | None = Field(default=None, description="User-supplied guidance for Agent 3.")
+    preferred_tone: str | None = Field(default=None, description="Tone for ads and notifications.")
+    must_include: list[str] = Field(default_factory=list)
+    must_avoid: list[str] = Field(default_factory=list)
+    approval_notes: str | None = None
+
+
 class Agent3Request(BaseModel):
     idea: IdeaInput
     evaluation: Agent1Evaluation | None = None
     planning: Agent2Planning | None = None
     constraints: AnalysisConstraints = Field(default_factory=AnalysisConstraints)
+    user_input: UserInput | None = None
 
 
 class Scorecard(BaseModel):
@@ -172,6 +197,7 @@ class Agent3Response(BaseModel):
 
 
 class MarketingContact(BaseModel):
+    contact_id: str | None = None
     name: str | None = None
     email: str | None = None
     phone_number: str | None = None
@@ -179,11 +205,14 @@ class MarketingContact(BaseModel):
         default=False,
         description="Must be true for real marketing email/SMS sends.",
     )
+    opted_out: bool = Field(default=False, description="Skip this contact for marketing sends.")
 
 
 class MarketingSendRequest(BaseModel):
     contact: MarketingContact
     message: MarketingNotificationDraft
+    campaign_id: str | None = None
+    unsubscribe_url: str | None = None
     dry_run: bool = Field(default=True, description="Preview provider payload without sending.")
 
 
@@ -192,5 +221,76 @@ class DeliveryResult(BaseModel):
     channel: NotificationChannel
     dry_run: bool
     status: str
-    payload: dict
-    provider_response: dict | str | None = None
+    payload: dict[str, Any]
+    provider_response: dict[str, Any] | str | None = None
+
+
+class MarketingCampaignRequest(BaseModel):
+    analysis_request: Agent3Request
+    audience: list[MarketingContact] = Field(..., min_length=1)
+    channel: NotificationChannel = NotificationChannel.EMAIL
+    campaign_id: str | None = None
+    campaign_name: str | None = None
+    message: MarketingNotificationDraft | None = None
+    unsubscribe_base_url: str | None = Field(
+        default=None,
+        description="Base URL for unsubscribe links, owned by the future UI/orchestrator.",
+    )
+    dry_run: bool = Field(default=True, description="Preview campaign payloads without sending.")
+
+
+class CampaignDeliveryItem(BaseModel):
+    contact: MarketingContact
+    status: DeliveryStatus
+    result: DeliveryResult | None = None
+    reason: str | None = None
+
+
+class CampaignDeliveryResult(BaseModel):
+    campaign_id: str
+    campaign_name: str
+    idea_id: str | None
+    channel: NotificationChannel
+    status: CampaignStatus
+    dry_run: bool
+    total_contacts: int
+    sent_count: int
+    preview_count: int
+    skipped_count: int
+    failed_count: int
+    message: MarketingNotificationDraft
+    deliveries: list[CampaignDeliveryItem]
+    created_at: datetime
+    updated_at: datetime
+
+
+class CampaignSummary(BaseModel):
+    campaign_id: str
+    campaign_name: str
+    idea_id: str | None
+    channel: NotificationChannel
+    status: CampaignStatus
+    dry_run: bool
+    total_contacts: int
+    sent_count: int
+    preview_count: int
+    skipped_count: int
+    failed_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class OptOutRequest(BaseModel):
+    email: str | None = None
+    phone_number: str | None = None
+    campaign_id: str | None = None
+    reason: str | None = None
+
+
+class OptOutRecord(BaseModel):
+    key: str
+    email: str | None = None
+    phone_number: str | None = None
+    campaign_id: str | None = None
+    reason: str | None = None
+    opted_out_at: datetime

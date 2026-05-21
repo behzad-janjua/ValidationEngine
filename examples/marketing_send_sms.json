@@ -1,0 +1,19 @@
+{
+  "contact": {
+    "contact_id": "team-1",
+    "name": "Ada",
+    "phone_number": "+14165550123",
+    "marketing_consent": true
+  },
+  "message": {
+    "channel": "sms",
+    "type": "agent3_product_launch_sms",
+    "audience": "small agencies",
+    "body": "New: AI invoice cleanup is opening early access for small agencies. If messy client invoices waste operations time, join here: https://example.com/early-access",
+    "cta": "Join early access",
+    "compliance_note": "Send only to opted-in SMS contacts and include opt-out handling in production."
+  },
+  "campaign_id": "camp_internal_launch_001",
+  "unsubscribe_url": "https://example.com/marketing/opt-out?campaign_id=camp_internal_launch_001&phone_number=%2B14165550123",
+  "dry_run": true
+}

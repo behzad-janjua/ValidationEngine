@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from agent3.models import Agent3Request
+from agents.agent3.models import Agent3Request
 
 
 SYSTEM_PROMPT = """You are Agent Service 3: Market + Growth Agent.
@@ -40,6 +40,9 @@ Agent 2 planning:
 Constraints:
 {constraints}
 
+User input:
+{user_input}
+
 Return:
 - scorecard
 - marketability_check
@@ -61,4 +64,5 @@ def build_agent3_prompt(request: Agent3Request) -> str:
         evaluation=request.evaluation.model_dump_json(indent=2) if request.evaluation else "null",
         planning=request.planning.model_dump_json(indent=2) if request.planning else "null",
         constraints=request.constraints.model_dump_json(indent=2),
+        user_input=request.user_input.model_dump_json(indent=2) if request.user_input else "null",
     )
