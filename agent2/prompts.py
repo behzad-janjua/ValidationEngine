@@ -18,7 +18,8 @@ Rules:
 
 
 def build_user_prompt(idea) -> str:
-    notes = "\n".join(f"- {n}" for n in idea.clarification_notes) or "None"
+    target = idea.target_user or "Not specified"
+    problem = idea.problem or "Not specified"
     return f"""
 Review this shortlisted idea and return a JSON object matching this exact structure:
 {{
@@ -45,11 +46,12 @@ Review this shortlisted idea and return a JSON object matching this exact struct
 Idea details:
   Title:               {idea.title}
   Summary:             {idea.summary}
-  Target user:         {idea.target_user}
-  Problem it solves:   {idea.problem}
-  Feasibility score:   {idea.feasibility_score}/100
-  Innovation score:    {idea.innovation_score}/100
-  Marketability score: {idea.marketability_score}/100
-  Clarification notes:
-{notes}
+  Target user:         {target}
+  Problem it solves:   {problem}
+  Feasibility score:   {idea.scores.feasibility}/10
+  Innovation score:    {idea.scores.innovation}/10
+  Impact score:        {idea.scores.impact}/10
+  Marketability score: {idea.scores.marketability}/10
+  Clarity score:       {idea.scores.clarity}/10
+  Overall score:       {idea.scores.overall}/10
 """.strip()

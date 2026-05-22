@@ -2,16 +2,21 @@ from pydantic import BaseModel
 from typing import Optional
 
 # ── What Agent 1 sends you ──────────────────────────────────────────
+class Scores(BaseModel):
+    feasibility: float    # 0–10
+    innovation: float     # 0–10
+    impact: float         # 0–10
+    marketability: float  # 0–10
+    clarity: float        # 0–10
+    overall: float        # 0–10
+
 class IdeaInput(BaseModel):
-    idea_id: str
+    ideaIndex: int
     title: str
+    scores: Scores
     summary: str
-    target_user: str
-    problem: str
-    feasibility_score: int        # 0–100
-    innovation_score: int         # 0–100
-    marketability_score: int      # 0–100
-    clarification_notes: list[str] = []
+    target_user: Optional[str] = None
+    problem: Optional[str] = None
 
 # ── What Agent 2 adds ───────────────────────────────────────────────
 class Critique(BaseModel):

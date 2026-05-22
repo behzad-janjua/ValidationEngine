@@ -101,7 +101,7 @@ def _coerce_agent2_payload(payload: dict, idea: IdeaInput) -> dict:
     """Normalize near-miss model payloads into the expected Agent2 schema."""
     normalized = dict(payload)
 
-    normalized.setdefault("idea_id", idea.idea_id)
+    normalized.setdefault("idea_id", str(idea.ideaIndex))
     normalized.setdefault("title", idea.title)
 
     if "next_actions" not in normalized:
@@ -155,14 +155,8 @@ def process_batch(ideas: list[IdeaInput]) -> list[Agent2Output]:
     """Run agent 2 over a list of ideas. Skips low-quality ideas."""
     results = []
     for idea in ideas:
-        avg_score = (
-            idea.feasibility_score
-            + idea.innovation_score
-            + idea.marketability_score
-        ) / 3
-
-        if avg_score < 50:
-            print(f"Skipping '{idea.title}' — avg score {avg_score:.0f} below threshold")
+        if idea.scores.overall < 5:
+            print(f"Skipping '{idea.title}' — overall score {idea.scores.overall:.1f} below threshold")
             continue
 
         print(f"Processing: {idea.title}")

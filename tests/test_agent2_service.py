@@ -8,18 +8,16 @@ from agent2.service import Agent2Error, process_batch, run_agent2
 
 def test_run_agent2_coerces_near_miss_payload(monkeypatch: pytest.MonkeyPatch) -> None:
     idea = IdeaInput(
-        idea_id="idea-123",
+        ideaIndex=123,
         title="AI invoice cleanup",
         summary="Automates invoice cleanup for small agencies",
         target_user="small agencies",
         problem="messy invoices waste operations time",
-        feasibility_score=82,
-        innovation_score=68,
-        marketability_score=75,
+        scores={"feasibility": 8.2, "innovation": 6.8, "impact": 7.5, "marketability": 7.5, "clarity": 8.0, "overall": 7.6},
     )
 
     payload = {
-        "idea_id": "idea-123",
+        "idea_id": "123",
         "title": "AI invoice cleanup",
         "critique": {
             "top_risks": ["Low willingness to pay", "Integration complexity", "Generic positioning"],
@@ -46,7 +44,7 @@ def test_run_agent2_coerces_near_miss_payload(monkeypatch: pytest.MonkeyPatch) -
     response = run_agent2(idea)
 
     assert isinstance(response, Agent2Output)
-    assert response.idea_id == "idea-123"
+    assert response.idea_id == "123"
     assert response.next_actions == ["Interview 5 agencies", "Prototype invoice parsing", "Measure time saved"]
     assert response.overall_viability == "High"
     assert response.viability_reason == "The workflow is narrow and validation is straightforward."
@@ -54,34 +52,22 @@ def test_run_agent2_coerces_near_miss_payload(monkeypatch: pytest.MonkeyPatch) -
 
 def test_process_batch_skips_low_quality_ideas_and_continues(monkeypatch: pytest.MonkeyPatch) -> None:
     low_quality = IdeaInput(
-        idea_id="low-1",
+        ideaIndex=1,
         title="Low quality concept",
         summary="",
-        target_user="",
-        problem="",
-        feasibility_score=20,
-        innovation_score=30,
-        marketability_score=40,
+        scores={"feasibility": 2.0, "innovation": 3.0, "impact": 2.5, "marketability": 4.0, "clarity": 3.5, "overall": 3.0},
     )
     good_idea = IdeaInput(
-        idea_id="good-1",
+        ideaIndex=2,
         title="Good concept",
         summary="",
-        target_user="",
-        problem="",
-        feasibility_score=80,
-        innovation_score=75,
-        marketability_score=70,
+        scores={"feasibility": 8.0, "innovation": 7.5, "impact": 8.5, "marketability": 7.0, "clarity": 8.0, "overall": 7.8},
     )
     failing_idea = IdeaInput(
-        idea_id="good-2",
+        ideaIndex=3,
         title="Failing concept",
         summary="",
-        target_user="",
-        problem="",
-        feasibility_score=90,
-        innovation_score=85,
-        marketability_score=80,
+        scores={"feasibility": 9.0, "innovation": 8.5, "impact": 9.0, "marketability": 8.0, "clarity": 8.5, "overall": 8.6},
     )
 
     calls: list[str] = []
@@ -92,7 +78,7 @@ def test_process_batch_skips_low_quality_ideas_and_continues(monkeypatch: pytest
             raise Agent2Error("upstream failure")
 
         return Agent2Output(
-            idea_id=idea.idea_id,
+            idea_id=str(idea.ideaIndex),
             title=idea.title,
             critique={
                 "top_risks": ["risk-1", "risk-2", "risk-3"],
@@ -118,5 +104,5 @@ def test_process_batch_skips_low_quality_ideas_and_continues(monkeypatch: pytest
 
     assert calls == ["Good concept", "Failing concept"]
     assert len(results) == 1
-    assert results[0].idea_id == "good-1"
+    assert results[0].idea_id == "2"
     assert results[0].title == "Good concept"
