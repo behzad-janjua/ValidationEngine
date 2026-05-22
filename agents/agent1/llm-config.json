@@ -1,6 +1,6 @@
 {
   "apiUrl": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
-  "apiKey": "AIzaSyC-_d1c9oU6mZi-iG_vr_JXINZaCzTtktA",
+  "apiKey": "<api_key>",
   "model": "gemini-3.5-flash",
   "maxTokens": 65536,
   "temperature": 0.7,
