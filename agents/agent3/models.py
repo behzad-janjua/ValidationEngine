@@ -53,19 +53,29 @@ class IdeaInput(BaseModel):
 
 
 class Agent1Evaluation(BaseModel):
+    """Scores from Agent 1, all on a 0-100 scale (Agent 1 rates 1-10; multiply ×10)."""
+
     feasibility_score: int | None = Field(default=None, ge=0, le=100)
     innovation_score: int | None = Field(default=None, ge=0, le=100)
+    impact_score: int | None = Field(default=None, ge=0, le=100)
     marketability_score: int | None = Field(default=None, ge=0, le=100)
+    clarity_score: int | None = Field(default=None, ge=0, le=100)
     clarification_questions: list[str] = Field(default_factory=list)
     critique: list[str] = Field(default_factory=list)
 
 
 class Agent2Planning(BaseModel):
+    """Planning output from Agent 2. Populate via Agent2Output.to_agent3_planning()."""
+
     launch_plan: list[str] = Field(default_factory=list)
     positioning: str | None = None
     ad_copy_suggestions: list[str] = Field(default_factory=list)
     content_calendar: list[str] = Field(default_factory=list)
     messaging: list[str] = Field(default_factory=list)
+    next_actions: list[str] = Field(default_factory=list)
+    overall_viability: str | None = None
+    viability_reason: str | None = None
+    top_risks: list[str] = Field(default_factory=list)
 
 
 class AnalysisConstraints(BaseModel):

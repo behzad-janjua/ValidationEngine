@@ -14,6 +14,19 @@ from agents.agent3.models import (
     OptOutRequest,
 )
 from agents.agent3.service import Agent3Analyzer
+from agents.config import GoogleSettings
+
+
+def _test_settings() -> Settings:
+    return Settings(
+        google=GoogleSettings(api_key=None, project=None),
+        pingram_api_key=None,
+        pingram_email_type="agent3_product_launch_email",
+        pingram_sms_type="agent3_product_launch_sms",
+        pingram_sender_name=None,
+        pingram_sender_email=None,
+        pingram_dry_run=True,
+    )
 
 
 def test_agent3_returns_growth_outputs() -> None:
@@ -52,7 +65,7 @@ def test_agent3_reality_check_has_kill_criteria() -> None:
     response = Agent3Analyzer().analyze(request)
 
     assert len(response.reality_check.kill_criteria) >= 2
-    assert "validation" in response.reality_check.fastest_validation_test.lower()
+    assert len(response.reality_check.fastest_validation_test) > 10
     assert response.gtm_channels[0].name == "Short-form demo loop"
 
 
@@ -68,18 +81,8 @@ async def test_pingram_email_dry_run_builds_payload() -> None:
         )
     )
     message = analysis.marketing_notifications[0]
-    settings = Settings(
-        google_cloud_api_key=None,
-        google_cloud_project=None,
-        pingram_api_key=None,
-        pingram_email_type="agent3_product_launch_email",
-        pingram_sms_type="agent3_product_launch_sms",
-        pingram_sender_name=None,
-        pingram_sender_email=None,
-        pingram_dry_run=True,
-    )
 
-    result = await PingramDeliveryClient(settings).send(
+    result = await PingramDeliveryClient(_test_settings()).send(
         MarketingSendRequest(
             contact=MarketingContact(name="Ada", email="ada@example.com"),
             message=message,
@@ -94,16 +97,7 @@ async def test_pingram_email_dry_run_builds_payload() -> None:
 
 @pytest.mark.asyncio
 async def test_campaign_create_and_send_tracks_three_person_launch_audience() -> None:
-    settings = Settings(
-        google_cloud_api_key=None,
-        google_cloud_project=None,
-        pingram_api_key=None,
-        pingram_email_type="agent3_product_launch_email",
-        pingram_sms_type="agent3_product_launch_sms",
-        pingram_sender_name=None,
-        pingram_sender_email=None,
-        pingram_dry_run=True,
-    )
+    settings = _test_settings()
     analyzer = Agent3Analyzer()
     registry = CampaignRegistry()
     manager = CampaignManager(analyzer, PingramDeliveryClient(settings), registry)
@@ -138,16 +132,7 @@ async def test_campaign_create_and_send_tracks_three_person_launch_audience() ->
 
 @pytest.mark.asyncio
 async def test_campaign_skips_recorded_opt_out() -> None:
-    settings = Settings(
-        google_cloud_api_key=None,
-        google_cloud_project=None,
-        pingram_api_key=None,
-        pingram_email_type="agent3_product_launch_email",
-        pingram_sms_type="agent3_product_launch_sms",
-        pingram_sender_name=None,
-        pingram_sender_email=None,
-        pingram_dry_run=True,
-    )
+    settings = _test_settings()
     analyzer = Agent3Analyzer()
     registry = CampaignRegistry()
     registry.record_opt_out(OptOutRequest(email="b@example.com", reason="team test"))

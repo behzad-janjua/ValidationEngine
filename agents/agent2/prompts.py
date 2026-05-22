@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from agents.agent2.models import IdeaInput
+
 SYSTEM_PROMPT = """
 You are a product planning and critique agent for an enterprise innovation team.
 You review shortlisted business ideas that have already passed an initial validation filter.
@@ -17,8 +21,8 @@ Rules:
 """.strip()
 
 
-def build_user_prompt(idea) -> str:
-    target = idea.target_user or "Not specified"
+def build_user_prompt(idea: IdeaInput) -> str:
+    target = idea.target_customer or "Not specified"
     problem = idea.problem or "Not specified"
     return f"""
 Review this shortlisted idea and return a JSON object matching this exact structure:
@@ -46,7 +50,7 @@ Review this shortlisted idea and return a JSON object matching this exact struct
 Idea details:
   Title:               {idea.title}
   Summary:             {idea.summary}
-  Target user:         {target}
+  Target customer:     {target}
   Problem it solves:   {problem}
   Feasibility score:   {idea.scores.feasibility}/10
   Innovation score:    {idea.scores.innovation}/10

@@ -3,14 +3,19 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "validation-engine-agent3"
+name = "validation-engine"
 version = "0.1.0"
-description = "Market and growth agent service for idea validation workflows."
+description = "Idea validation workflow: evaluate, plan, and launch."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.30.0",
   "pydantic>=2.7.0",
+  "pydantic-settings>=2.3.0",
+  "httpx>=0.27.0",
+  "requests>=2.31.0",
+  "python-multipart>=0.0.9",
+  "openpyxl>=3.1.0",
   "pingram-python>=0.1.0",
 ]
 

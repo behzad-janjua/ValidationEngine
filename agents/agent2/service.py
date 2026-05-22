@@ -1,15 +1,13 @@
+from __future__ import annotations
+
 import json
+
 import requests
 from pydantic import ValidationError
 
-try:
-    from .models import IdeaInput, Agent2Output
-    from .prompts import SYSTEM_PROMPT, build_user_prompt
-    from .config import settings
-except ImportError:
-    from models import IdeaInput, Agent2Output
-    from prompts import SYSTEM_PROMPT, build_user_prompt
-    from config import settings
+from agents.agent2.config import settings
+from agents.agent2.models import Agent2Output, BatchResultItem, BatchResultStatus, IdeaInput
+from agents.agent2.prompts import SYSTEM_PROMPT, build_user_prompt
 
 
 class Agent2Error(Exception):
@@ -21,7 +19,7 @@ class Agent2ConfigurationError(Agent2Error):
 
 
 class Agent2ResponseParseError(Agent2Error):
-    """Raised when model output cannot be parsed into required schema."""
+    """Raised when model output cannot be parsed into the required schema."""
 
 
 class Agent2ProviderError(Agent2Error):
@@ -30,7 +28,7 @@ class Agent2ProviderError(Agent2Error):
 
 def _call_ollama(system_prompt: str, user_prompt: str) -> str:
     payload = {
-        "model": settings.model,
+        "model": settings.ollama_model,
         "stream": False,
         "format": "json",
         "messages": [
@@ -63,8 +61,7 @@ def _call_ollama(system_prompt: str, user_prompt: str) -> str:
     except json.JSONDecodeError as err:
         raise Agent2ProviderError("Ollama returned a non-JSON response") from err
 
-    message = data.get("message", {})
-    content = message.get("content")
+    content = data.get("message", {}).get("content")
     if not content:
         raise Agent2ProviderError("Ollama response missing assistant content")
 
@@ -74,7 +71,6 @@ def _call_ollama(system_prompt: str, user_prompt: str) -> str:
 def _extract_json_payload(raw_text: str) -> dict:
     cleaned = raw_text.strip()
 
-    # Handle fenced markdown responses such as ```json ... ```
     if cleaned.startswith("```"):
         sections = cleaned.split("```")
         if len(sections) >= 2:
@@ -86,7 +82,6 @@ def _extract_json_payload(raw_text: str) -> dict:
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
-        # Fallback: parse first JSON object if model adds extra text around payload.
         start = cleaned.find("{")
         end = cleaned.rfind("}")
         if start == -1 or end == -1 or start >= end:
@@ -98,10 +93,9 @@ def _extract_json_payload(raw_text: str) -> dict:
 
 
 def _coerce_agent2_payload(payload: dict, idea: IdeaInput) -> dict:
-    """Normalize near-miss model payloads into the expected Agent2 schema."""
+    """Normalize near-miss model payloads into the expected Agent2Output schema."""
     normalized = dict(payload)
-
-    normalized.setdefault("idea_id", str(idea.ideaIndex))
+    normalized.setdefault("idea_id", str(idea.idea_index))
     normalized.setdefault("title", idea.title)
 
     if "next_actions" not in normalized:
@@ -132,39 +126,52 @@ def _coerce_agent2_payload(payload: dict, idea: IdeaInput) -> dict:
 
 
 def run_agent2(idea: IdeaInput) -> Agent2Output:
-    """
-    Send one idea to the LLM, parse the JSON response,
-    and return a validated Agent2Output object.
-    """
-    if not settings.model:
-        raise Agent2ConfigurationError("MODEL is not configured")
+    if not settings.ollama_model:
+        raise Agent2ConfigurationError("OLLAMA_MODEL is not configured")
 
-    user_prompt = build_user_prompt(idea)
-
-    raw_text = _call_ollama(SYSTEM_PROMPT, user_prompt)
+    raw_text = _call_ollama(SYSTEM_PROMPT, build_user_prompt(idea))
     parsed = _extract_json_payload(raw_text)
     parsed = _coerce_agent2_payload(parsed, idea)
 
     try:
         return Agent2Output(**parsed)
     except ValidationError as err:
-        raise Agent2ResponseParseError(f"Model response failed schema validation: {err}") from err
+        raise Agent2ResponseParseError(
+            f"Model response failed schema validation: {err}"
+        ) from err
 
 
-def process_batch(ideas: list[IdeaInput]) -> list[Agent2Output]:
-    """Run agent 2 over a list of ideas. Skips low-quality ideas."""
-    results = []
+def process_batch(ideas: list[IdeaInput]) -> list[BatchResultItem]:
+    """Run agent 2 over a list of ideas. Returns per-idea status for every input."""
+    results: list[BatchResultItem] = []
     for idea in ideas:
         if idea.scores.overall < 5:
-            print(f"Skipping '{idea.title}' — overall score {idea.scores.overall:.1f} below threshold")
+            results.append(
+                BatchResultItem(
+                    idea_index=idea.idea_index,
+                    title=idea.title,
+                    status=BatchResultStatus.SKIPPED,
+                    skip_reason="overall score below threshold (5.0)",
+                )
+            )
             continue
-
-        print(f"Processing: {idea.title}")
         try:
-            result = run_agent2(idea)
-            results.append(result)
-        except Agent2Error as err:
-            # Continue processing remaining ideas instead of failing the whole batch.
-            print(f"Failed '{idea.title}' — {err}")
-
+            output = run_agent2(idea)
+            results.append(
+                BatchResultItem(
+                    idea_index=idea.idea_index,
+                    title=idea.title,
+                    status=BatchResultStatus.SUCCESS,
+                    output=output,
+                )
+            )
+        except Agent2Error as exc:
+            results.append(
+                BatchResultItem(
+                    idea_index=idea.idea_index,
+                    title=idea.title,
+                    status=BatchResultStatus.FAILED,
+                    error=str(exc),
+                )
+            )
     return results

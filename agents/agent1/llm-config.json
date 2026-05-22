@@ -1,8 +1,0 @@
-{
-  "apiUrl": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-  "apiKey": "<API-KEY-HERE",
-  "model": "gemini-2.5-flash",
-  "maxTokens": 65536,
-  "temperature": 0.7,
-  "provider": "gemini"
-}
