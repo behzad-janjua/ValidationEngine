@@ -1,0 +1,31 @@
+{
+  "row_id": "idea-003",
+  "scorecard": {
+    "marketability": 73,
+    "speed_to_market": 75,
+    "differentiation": 62,
+    "distribution_fit": 68,
+    "monetization_confidence": 67,
+    "risk": 32
+  },
+  "advertisement_help": [
+    {
+      "channel": "Founder-led LinkedIn outbound",
+      "headline": "Get AI invoice cleanup for agencies in front of real buyers this week",
+      "primary_text": "Stop debating the idea in private. Validate the promise with small agencies, learn the objections, and launch the smallest version that can earn a yes.",
+      "cta": "Join the pilot"
+    }
+  ],
+  "marketing_notifications": [
+    {
+      "channel": "email",
+      "type": "agent3_product_launch_email",
+      "audience": "small agencies",
+      "subject": "New: AI invoice cleanup for agencies is opening early access",
+      "body": "AI invoice cleanup for agencies is opening early access for small agencies.",
+      "html": "<p>AI invoice cleanup for agencies is opening early access for small agencies.</p>",
+      "cta": "Join early access",
+      "compliance_note": "Send only to users who opted in to receive product or marketing updates."
+    }
+  ]
+}

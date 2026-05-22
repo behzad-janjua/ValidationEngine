@@ -26,13 +26,15 @@ Owned by Agent 3:
 - Growth experiments
 - Advertisement help
 - Email/SMS product launch marketing notifications
-- Optional Pingram delivery for opted-in marketing contacts
+- Pingram campaign delivery for an opted-in launch audience
+- Unsubscribe and opt-out tracking
+- Campaign tracking
 - Final recommendation
 - Reality check
 
-It is implemented as a FastAPI service in `agent3/`. The current analyzer is
+It is implemented as a FastAPI service in `agents/agent3/`. The current analyzer is
 deterministic so the service can run locally without an LLM key. The prompt
-contract is available in `agent3/prompts.py` and exposed at `/prompt` so an
+contract is available in `agents/agent3/prompts.py` and exposed at `/prompt` so an
 orchestrator can route the same schema to an LLM-backed implementation later.
 
 ## Workflow Boundary
@@ -53,7 +55,7 @@ This service only owns step 3's market/growth analysis response.
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
-uvicorn agent3.main:app --reload
+uvicorn agents.agent3.main:app --reload
 ```
 
 Create a local `.env` from the example when you need provider keys:
@@ -102,6 +104,12 @@ curl -X POST http://127.0.0.1:8000/analyze \
       "team_size": 1,
       "launch_url": "https://example.com/early-access",
       "risk_tolerance": "medium"
+    },
+    "user_input": {
+      "notes": "This is going first to our internal launch audience.",
+      "preferred_tone": "clear, practical, and early-access focused",
+      "must_include": ["early access", "billing errors"],
+      "must_avoid": ["guaranteed savings"]
     }
   }'
 ```
@@ -119,6 +127,8 @@ Request:
   and messaging output.
 - `constraints`: timeline, budget, team size, geography, launch URL, allowed
   channels, and risk tolerance.
+- `user_input`: optional human guidance for tone, must-include phrases,
+  must-avoid phrases, and launch notes.
 
 Response:
 
@@ -172,6 +182,50 @@ format, for example `+14165550123`.
 By default, requests are dry runs. To send real marketing messages, configure
 `PINGRAM_API_KEY`, set `PINGRAM_DRY_RUN=false`, send the request with
 `"dry_run": false`, and make sure `contact.marketing_consent` is `true`.
+
+## Launch Campaigns
+
+For the initial launch audience, Agent 3 can create the marketing message and
+send it to a provided list of contacts in one call:
+
+```bash
+curl -X POST http://127.0.0.1:8000/campaigns/create-and-send \
+  -H "Content-Type: application/json" \
+  --data @examples/marketing_campaign_create_and_send.json
+```
+
+The example uses three opted-in team contacts and `dry_run: true`. Set
+`dry_run: false` only when `PINGRAM_API_KEY` is configured and you want Pingram
+to send real messages.
+
+Campaign tracking endpoints:
+
+- `GET /campaigns`: list campaign summaries.
+- `GET /campaigns/{campaign_id}`: inspect a campaign and per-contact delivery
+  results.
+- `POST /marketing/opt-out`: record an email or phone number opt-out.
+- `GET /marketing/opt-out`: unsubscribe-link compatible opt-out endpoint.
+- `GET /marketing/opt-outs`: list recorded opt-outs.
+
+Campaign and opt-out tracking is in memory for this Agent 3 MVP. The future
+orchestrator should back these records with a database before production use.
+
+Opt-out handling:
+
+- Real sends require `marketing_consent: true`.
+- Contacts marked `opted_out: true` are skipped.
+- Contacts recorded through `/marketing/opt-out` are skipped in future campaigns.
+- Email payloads include an unsubscribe footer.
+- SMS payloads include an opt-out instruction or URL.
+
+## Examples
+
+- `examples/agent3_request.json`: `/analyze` payload with user input.
+- `examples/agent3_response_excerpt.json`: abbreviated response shape.
+- `examples/marketing_campaign_create_and_send.json`: three-person launch
+  audience campaign payload.
+- `examples/marketing_send_sms.json`: single SMS marketing send payload.
+- `examples/marketing_opt_out.json`: opt-out payload.
 
 ## Verify
 

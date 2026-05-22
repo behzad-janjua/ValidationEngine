@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from statistics import mean
 
-from agent3.models import (
+from agents.agent3.models import (
     AdCreative,
     Agent1Evaluation,
     Agent2Planning,
@@ -308,19 +308,28 @@ class Agent3Analyzer:
             AdCreative(
                 channel=primary_channel,
                 headline=f"Get {title} in front of real buyers this week",
-                primary_text=f"Stop debating the idea in private. Validate the promise with {customer}, learn the objections, and launch the smallest version that can earn a yes.",
+                primary_text=self._apply_user_copy_guidance(
+                    request,
+                    f"Stop debating the idea in private. Validate the promise with {customer}, learn the objections, and launch the smallest version that can earn a yes.",
+                ),
                 cta="Join the pilot",
             ),
             AdCreative(
                 channel="LinkedIn or founder-led outbound",
                 headline=f"Still solving this with spreadsheets or guesswork?",
-                primary_text=f"{positioning} I am opening a small pilot for {customer} who want the outcome faster without committing to a full build.",
+                primary_text=self._apply_user_copy_guidance(
+                    request,
+                    f"{positioning} I am opening a small pilot for {customer} who want the outcome faster without committing to a full build.",
+                ),
                 cta="Book a 15-minute fit call",
             ),
             AdCreative(
                 channel="Short-form social",
                 headline=f"Would you use this?",
-                primary_text=f"We are testing {title}: {request.idea.description[:180].rstrip()} Share the current workaround and get early access.",
+                primary_text=self._apply_user_copy_guidance(
+                    request,
+                    f"We are testing {title}: {request.idea.description[:180].rstrip()} Share the current workaround and get early access.",
+                ),
                 cta="Get early access",
             ),
         ]
@@ -337,6 +346,7 @@ class Agent3Analyzer:
         problem = request.idea.problem or "the old way takes too much time"
         launch_destination = request.constraints.launch_url or "Reply to get early access."
         launch_cta = "Join early access"
+        include_sentence = self._must_include_sentence(request)
 
         email_body = (
             f"{title} is opening early access for {customer}.\n\n"
@@ -344,13 +354,16 @@ class Agent3Analyzer:
             f"What it helps with: {positioning}\n\n"
             "We are inviting a small group of early users to try the product, share feedback, "
             "and help shape the first public launch.\n\n"
+            f"{include_sentence}"
             f"{launch_destination}"
         )
+        email_body = self._remove_avoided_phrases(request, email_body)
 
         sms_body = (
             f"New: {title} is opening early access for {customer}. "
             f"If {problem} is relevant, {launch_destination}"
         )
+        sms_body = self._remove_avoided_phrases(request, sms_body)
 
         return [
             MarketingNotificationDraft(
@@ -525,6 +538,8 @@ class Agent3Analyzer:
             request.idea.problem or "",
             request.idea.solution or "",
             request.idea.category or "",
+            request.user_input.notes if request.user_input else "",
+            " ".join(request.user_input.must_include) if request.user_input else "",
         ]
         return " ".join(part for part in parts if part)
 
@@ -547,6 +562,33 @@ class Agent3Analyzer:
     def _email_html(self, body: str, cta: str) -> str:
         paragraphs = "".join(f"<p>{line}</p>" for line in body.splitlines() if line.strip())
         return f"{paragraphs}<p><strong>{cta}</strong></p>"
+
+    def _apply_user_copy_guidance(self, request: Agent3Request, copy: str) -> str:
+        user_input = request.user_input
+        if not user_input:
+            return copy
+
+        guided_copy = self._remove_avoided_phrases(request, copy)
+        missing_phrases = [phrase for phrase in user_input.must_include if phrase.lower() not in guided_copy.lower()]
+        if missing_phrases:
+            guided_copy = f"{guided_copy} Early access note: {', '.join(missing_phrases)}."
+
+        return guided_copy
+
+    def _must_include_sentence(self, request: Agent3Request) -> str:
+        user_input = request.user_input
+        if not user_input or not user_input.must_include:
+            return ""
+        return f"Key launch details: {', '.join(user_input.must_include)}.\n\n"
+
+    def _remove_avoided_phrases(self, request: Agent3Request, copy: str) -> str:
+        user_input = request.user_input
+        if not user_input:
+            return copy
+        cleaned = copy
+        for phrase in user_input.must_avoid:
+            cleaned = cleaned.replace(phrase, "").replace("  ", " ").strip()
+        return cleaned
 
     def _is_b2b(self, text: str) -> bool:
         b2b_markers = {

@@ -1,0 +1,52 @@
+{
+  "analysis_request": {
+    "idea": {
+      "row_id": "idea-003",
+      "title": "AI invoice cleanup for agencies",
+      "description": "An AI workflow that helps agencies clean up messy client invoices faster and reduce billing errors.",
+      "target_customer": "small agencies",
+      "problem": "messy client invoices waste operations time",
+      "solution": "automated invoice cleanup workflow",
+      "category": "B2B SaaS",
+      "price_point": "$49 per month"
+    },
+    "constraints": {
+      "timeline_days": 14,
+      "budget_usd": 500,
+      "team_size": 1,
+      "launch_url": "https://example.com/early-access",
+      "risk_tolerance": "medium"
+    },
+    "user_input": {
+      "notes": "Send this to the internal three-person launch audience first.",
+      "preferred_tone": "clear, practical, and early-access focused",
+      "must_include": ["early access", "billing errors"],
+      "must_avoid": ["guaranteed savings"]
+    }
+  },
+  "campaign_id": "camp_internal_launch_001",
+  "campaign_name": "Internal launch audience preview",
+  "channel": "email",
+  "audience": [
+    {
+      "contact_id": "team-1",
+      "name": "Ada",
+      "email": "ada@example.com",
+      "marketing_consent": true
+    },
+    {
+      "contact_id": "team-2",
+      "name": "Grace",
+      "email": "grace@example.com",
+      "marketing_consent": true
+    },
+    {
+      "contact_id": "team-3",
+      "name": "Katherine",
+      "email": "katherine@example.com",
+      "marketing_consent": true
+    }
+  ],
+  "unsubscribe_base_url": "https://example.com/marketing/opt-out",
+  "dry_run": true
+}

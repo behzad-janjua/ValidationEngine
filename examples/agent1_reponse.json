@@ -1,0 +1,162 @@
+{
+  "totalIdeas": 25,
+
+  "criteria": [
+    "feasibility",
+    "innovation",
+    "impact",
+    "marketability",
+    "clarity"
+  ],
+
+  "analysis": {
+    "ratings": [
+      {
+        "ideaIndex": 1,
+        "title": "AI-Powered Mental Health Companion",
+        "scores": {
+          "feasibility": 8,
+          "innovation": 7,
+          "impact": 9,
+          "marketability": 8,
+          "clarity": 9,
+          "overall": 8.2
+        },
+        "summary": "Addresses a critical need with a practical AI application, though competition is present."
+      },
+
+      {
+        "ideaIndex": 2,
+        "title": "Sustainable Fashion Marketplace",
+        "scores": {
+          "feasibility": 7,
+          "innovation": 7,
+          "impact": 8,
+          "marketability": 7,
+          "clarity": 9,
+          "overall": 7.6
+        },
+        "summary": "A good idea leveraging a growing market, but blockchain implementation for full transparency poses a significant challenge."
+      },
+
+      {
+        "ideaIndex": 3,
+        "title": "Smart Waste Management System",
+        "scores": {
+          "feasibility": 7,
+          "innovation": 7,
+          "impact": 9,
+          "marketability": 8,
+          "clarity": 9,
+          "overall": 8.0
+        },
+        "summary": "Strong environmental and economic impact with a well-defined IoT solution, though municipal adoption may be slow."
+      }
+
+      // ... remaining ideas ...
+    ],
+
+    "top3Overall": [
+      {
+        "rank": 1,
+        "ideaIndex": 5,
+        "title": "Local Food Rescue Network",
+        "overall": 8.6,
+        "reason": "Simple yet highly impactful solution to food waste and hunger, with clear benefits for all parties involved."
+      },
+
+      {
+        "rank": 2,
+        "ideaIndex": 23,
+        "title": "Disaster Response Coordination System",
+        "overall": 8.2,
+        "reason": "A critically important and highly impactful system for emergency response, offering clear benefits for coordination and saving lives."
+      },
+
+      {
+        "rank": 3,
+        "ideaIndex": 8,
+        "title": "Voice-Controlled Accessibility Suite",
+        "overall": 8.2,
+        "reason": "A highly impactful solution leveraging mature voice technology to significantly enhance independence for people with disabilities."
+      }
+    ],
+
+    "topByCategory": {
+      "feasibility": [
+        {
+          "ideaIndex": 5,
+          "title": "Local Food Rescue Network",
+          "score": 9,
+          "reason": "Simple app connecting restaurants and shelters with straightforward logistics."
+        },
+        {
+          "ideaIndex": 1,
+          "title": "AI-Powered Mental Health Companion",
+          "score": 8,
+          "reason": "Chatbots are common, and sentiment analysis with personalized strategies are achievable with current AI tech."
+        }
+      ],
+
+      "innovation": [
+        {
+          "ideaIndex": 19,
+          "title": "Language Learning Through Gaming",
+          "score": 8,
+          "reason": "Highly innovative approach using immersive multiplayer gameplay specifically for language acquisition."
+        },
+        {
+          "ideaIndex": 22,
+          "title": "Collaborative Music Creation Platform",
+          "score": 8,
+          "reason": "Unique combination of real-time collaborative production with AI-assisted composition."
+        }
+      ],
+
+      "impact": [
+        {
+          "ideaIndex": 5,
+          "title": "Local Food Rescue Network",
+          "score": 10,
+          "reason": "Directly tackles food waste and hunger on a local level with immediate, tangible benefits."
+        },
+        {
+          "ideaIndex": 8,
+          "title": "Voice-Controlled Accessibility Suite",
+          "score": 10,
+          "reason": "Greatly enhances independence and quality of life for people with disabilities."
+        }
+      ],
+
+      "marketability": [
+        {
+          "ideaIndex": 10,
+          "title": "AI Code Review Assistant",
+          "score": 9,
+          "reason": "Addresses a critical and universal need for developers with strong B2B potential and clear ROI."
+        },
+        {
+          "ideaIndex": 15,
+          "title": "AI-Powered Resume Builder",
+          "score": 9,
+          "reason": "Caters to a massive, recurring market of job seekers with a clear and immediate value proposition."
+        }
+      ],
+
+      "clarity": [
+        {
+          "ideaIndex": 5,
+          "title": "Local Food Rescue Network",
+          "score": 10,
+          "reason": "The problem and solution are exceptionally clear, simple, and easy to grasp."
+        },
+        {
+          "ideaIndex": 15,
+          "title": "AI-Powered Resume Builder",
+          "score": 10,
+          "reason": "Provides a straightforward and immediately understandable value proposition for job seekers."
+        }
+      ]
+    }
+  }
+}
