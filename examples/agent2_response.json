@@ -1,0 +1,43 @@
+{
+  "idea_id": "AI_Contract_Review_001",
+  "title": "AI-Powered Contract Review for Small Law Firms",
+  "critique": {
+    "top_risks": [
+      "LLM hallucination or misinterpretation of legal clauses leading to malpractice claims against user firms, despite disclaimers.",
+      "Regulatory and ethical hurdles for AI in legal practice, including data privacy, client confidentiality, and potential unauthorized practice of law concerns.",
+      "Small law firms' actual willingness to pay for a new, unproven AI tool, even if cheaper, given the high-stakes nature of legal work and existing manual workflows."
+    ],
+    "weaknesses": [
+      "Reliance on generic LLMs may struggle with highly specialized or nuanced legal language without extensive fine-tuning, leading to false positives/negatives.",
+      "Limited ability to handle complex cross-document analysis or understand client-specific context that an attorney would inherently know.",
+      "Difficulty in establishing trust and mitigating liability for AI-generated outputs in a profession where accuracy and human judgment are paramount."
+    ],
+    "assumptions_to_validate": [
+      "Small firms are prepared to integrate an AI tool into their existing workflows and manage the output validation process effectively.",
+      "The 'plain English summary' feature provides genuine time-saving value beyond basic clause flagging.",
+      "The specific types of contracts commonly handled by small firms are well-suited for current LLM capabilities without requiring significant custom model training per firm.",
+      "The perceived 'underserved niche' genuinely lacks adequate, affordable solutions, and firms aren't simply avoiding tech adoption."
+    ]
+  },
+  "mvp_plan": {
+    "phase_1": "Develop and launch a focused MVP for a single, high-volume contract type (e.g., NDAs) with core risk flagging functionality. Implement a clear human-in-the-loop review process and strict disclaimers. Target 5-10 pilot firms for intensive feedback.",
+    "phase_2": "Expand to include a second common contract type and introduce the plain English summary feature. Enhance flagging accuracy based on Phase 1 feedback. Begin offering to a broader set of early adopters with tiered pricing.",
+    "phase_3": "Integrate with common document management systems (e.g., Clio, MyCase). Introduce customizable risk profiles and reporting features. Explore expansion to more complex contract types or specialized legal areas.",
+    "estimated_timeline": "12-18 months",
+    "key_resources_needed": [
+      "AI/ML Engineers with NLP expertise",
+      "Legal domain expert(s) for model training and validation",
+      "Product Manager with SaaS experience",
+      "Legal counsel for compliance and liability guidance",
+      "Cloud infrastructure for LLM deployment"
+    ]
+  },
+  "positioning_statement": "AI-Powered Contract Review helps small law firms quickly identify risky clauses and understand contracts in plain English, making high-quality legal review accessible and affordable.",
+  "next_actions": [
+    "Conduct in-depth interviews with 10-15 small law firm attorneys to validate willingness to trust AI, specific contract types for MVP, and acceptable error rates.",
+    "Consult with legal counsel specializing in AI and professional liability to understand regulatory hurdles, compliance requirements, and liability frameworks for AI in legal tech.",
+    "Perform a technical feasibility sprint to test LLM performance on a diverse set of actual small firm contracts, focusing on critical clause identification and summarization accuracy."
+  ],
+  "overall_viability": "High",
+  "viability_reason": "Addresses a clear, high-value pain point for an underserved market with proven technology, but requires significant risk mitigation in a highly regulated industry."
+}

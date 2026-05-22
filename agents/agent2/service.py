@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import requests
+import google.generativeai as genai
 from pydantic import ValidationError
 
 from agents.agent2.config import settings
@@ -26,44 +26,27 @@ class Agent2ProviderError(Agent2Error):
     """Raised when the upstream LLM provider call fails."""
 
 
-def _call_ollama(system_prompt: str, user_prompt: str) -> str:
-    payload = {
-        "model": settings.ollama_model,
-        "stream": False,
-        "format": "json",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "options": {
-            "num_predict": settings.max_tokens,
-        },
-    }
-
+def _call_gemini(system_prompt: str, user_prompt: str) -> str:
+    genai.configure(api_key=settings.gemini_api_key)
+    model = genai.GenerativeModel(
+        model_name=settings.gemini_model,
+        system_instruction=system_prompt,
+    )
     try:
-        response = requests.post(
-            f"{settings.ollama_base_url}/api/chat",
-            json=payload,
-            timeout=settings.request_timeout_seconds,
+        response = model.generate_content(
+            user_prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=settings.gemini_max_output_tokens,
+                temperature=settings.gemini_temperature,
+                response_mime_type="application/json",
+            ),
         )
-    except requests.RequestException as err:
-        raise Agent2ProviderError(
-            f"Failed to reach Ollama at {settings.ollama_base_url}: {err}"
-        ) from err
+    except Exception as err:
+        raise Agent2ProviderError(f"Gemini API call failed: {err}") from err
 
-    if response.status_code != 200:
-        raise Agent2ProviderError(
-            f"Ollama returned HTTP {response.status_code}: {response.text}"
-        )
-
-    try:
-        data = response.json()
-    except json.JSONDecodeError as err:
-        raise Agent2ProviderError("Ollama returned a non-JSON response") from err
-
-    content = data.get("message", {}).get("content")
+    content = response.text
     if not content:
-        raise Agent2ProviderError("Ollama response missing assistant content")
+        raise Agent2ProviderError("Gemini returned an empty response")
 
     return content
 
@@ -93,7 +76,6 @@ def _extract_json_payload(raw_text: str) -> dict:
 
 
 def _coerce_agent2_payload(payload: dict, idea: IdeaInput) -> dict:
-    """Normalize near-miss model payloads into the expected Agent2Output schema."""
     normalized = dict(payload)
     normalized.setdefault("idea_id", str(idea.idea_index))
     normalized.setdefault("title", idea.title)
@@ -126,10 +108,10 @@ def _coerce_agent2_payload(payload: dict, idea: IdeaInput) -> dict:
 
 
 def run_agent2(idea: IdeaInput) -> Agent2Output:
-    if not settings.ollama_model:
-        raise Agent2ConfigurationError("OLLAMA_MODEL is not configured")
+    if not settings.gemini_api_key:
+        raise Agent2ConfigurationError("GEMINI_API_KEY is not configured")
 
-    raw_text = _call_ollama(SYSTEM_PROMPT, build_user_prompt(idea))
+    raw_text = _call_gemini(SYSTEM_PROMPT, build_user_prompt(idea))
     parsed = _extract_json_payload(raw_text)
     parsed = _coerce_agent2_payload(parsed, idea)
 
