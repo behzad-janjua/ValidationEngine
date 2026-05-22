@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent 1 - Idea Evaluator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+        .idea { border: 1px solid #ccc; padding: 10px; margin: 10px 0; cursor: pointer; }
+        .idea:hover { background: #f0f0f0; }
+        #loading, #error { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Agent 1: Idea Evaluator</h1>
+    
+    <div>
+        <input type="file" id="fileInput" accept=".csv,.xlsx">
+        <button onclick="analyzeFile()">Analyze File</button>
+        <button onclick="analyzeLocal()">Analyze Local CSV</button>
+    </div>
+    
+    <div id="loading">Loading...</div>
+    <div id="error" style="color: red;"></div>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API = 'http://127.0.0.1:8000';
+        
+        async function analyzeFile() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) { alert('Select a file'); return; }
+            
+            const formData = new FormData();
+            formData.append('excel', file);
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                const res = await fetch(`${API}/analyze`, { method: 'POST', body: formData });
+                const data = await res.json();
+                displayResults(data);
+            } catch (e) {
+                document.getElementById('error').textContent = 'Error: ' + e.message;
+                document.getElementById('error').style.display = 'block';
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        async function analyzeLocal() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                const res = await fetch(`${API}/analyze-local`, { method: 'POST' });
+                const data = await res.json();
+                displayResults(data);
+            } catch (e) {
+                document.getElementById('error').textContent = 'Error: ' + e.message;
+                document.getElementById('error').style.display = 'block';
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function displayResults(data) {
+            const div = document.getElementById('results');
+            div.innerHTML = '<h2>Results (Click idea to analyze with Agent 2)</h2>';
+            
+            data.analysis.ratings.sort((a, b) => b.overall - a.overall).forEach(idea => {
+                const ideaDiv = document.createElement('div');
+                ideaDiv.className = 'idea';
+                ideaDiv.innerHTML = `
+                    <h3>${idea.title}</h3>
+                    <p>${idea.summary}</p>
+                    <p><b>Overall: ${idea.overall}/10</b> | 
+                       Feasibility: ${idea.feasibility} | 
+                       Innovation: ${idea.innovation} | 
+                       Impact: ${idea.impact} | 
+                       Marketability: ${idea.marketability} | 
+                       Clarity: ${idea.clarity}</p>
+                `;
+                ideaDiv.onclick = () => {
+                    sessionStorage.setItem('idea', JSON.stringify({
+                        idea_index: idea.idea_index,
+                        title: idea.title,
+                        scores: {
+                            feasibility: idea.feasibility,
+                            innovation: idea.innovation,
+                            impact: idea.impact,
+                            marketability: idea.marketability,
+                            clarity: idea.clarity,
+                            overall: idea.overall
+                        },
+                        summary: idea.summary
+                    }));
+                    window.location.href = 'agent2.html';
+                };
+                div.appendChild(ideaDiv);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent 2 - Plan & Critique</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+        .section { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        #loading, #error { display: none; }
+        ul { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <button onclick="window.location.href='index.html'">← Back to Agent 1</button>
+    
+    <h1>Agent 2: Plan & Critique</h1>
+    
+    <div id="ideaInfo"></div>
+    
+    <div id="loading">Analyzing with Agent 2...</div>
+    <div id="error" style="color: red;"></div>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API = 'http://127.0.0.1:8001';
+        
+        window.onload = async () => {
+            const idea = JSON.parse(sessionStorage.getItem('idea'));
+            if (!idea) {
+                alert('No idea selected');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('ideaInfo').innerHTML = `
+                <h2>${idea.title}</h2>
+                <p>Overall Score: ${idea.scores.overall}/10</p>
+            `;
+            
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const res = await fetch(`${API}/plan-and-critique`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(idea)
+                });
+                const data = await res.json();
+                displayResults(data);
+            } catch (e) {
+                document.getElementById('error').textContent = 'Error: ' + e.message;
+                document.getElementById('error').style.display = 'block';
+            }
+            document.getElementById('loading').style.display = 'none';
+        };
+        
+        function displayResults(data) {
+            document.getElementById('results').innerHTML = `
+                <div class="section">
+                    <h3>Viability: ${data.overall_viability}</h3>
+                    <p>${data.viability_reason}</p>
+                </div>
+                
+                <div class="section">
+                    <h3>Positioning Statement</h3>
+                    <p>${data.positioning_statement}</p>
+                </div>
+                
+                <div class="section">
+                    <h3>MVP Plan</h3>
+                    <p><b>Phase 1:</b> ${data.mvp_plan.phase_1}</p>
+                    <p><b>Phase 2:</b> ${data.mvp_plan.phase_2}</p>
+                    <p><b>Phase 3:</b> ${data.mvp_plan.phase_3}</p>
+                    <p><b>Timeline:</b> ${data.mvp_plan.estimated_timeline}</p>
+                    <p><b>Resources:</b></p>
+                    <ul>${data.mvp_plan.key_resources_needed.map(r => `<li>${r}</li>`).join('')}</ul>
+                </div>
+                
+                <div class="section">
+                    <h3>Critique</h3>
+                    <p><b>Top Risks:</b></p>
+                    <ul>${data.critique.top_risks.map(r => `<li>${r}</li>`).join('')}</ul>
+                    <p><b>Weaknesses:</b></p>
+                    <ul>${data.critique.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
+                    <p><b>Assumptions to Validate:</b></p>
+                    <ul>${data.critique.assumptions_to_validate.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+                
+                <div class="section">
+                    <h3>Next Actions</h3>
+                    <ul>${data.next_actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
