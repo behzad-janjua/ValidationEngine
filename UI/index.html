@@ -7,17 +7,12 @@
         button { padding: 10px; margin: 5px; cursor: pointer; }
         .idea { border: 1px solid #ccc; padding: 10px; margin: 10px 0; cursor: pointer; }
         .idea:hover { background: #f0f0f0; }
-        #loading, #error { display: none; }
-    </style>
-</head>
-<body>
+        </style>
+    </head>
+    <body>
     <h1>Agent 1: Idea Evaluator</h1>
     
-    <div>
-        <input type="file" id="fileInput" accept=".csv,.xlsx">
-        <button onclick="analyzeFile()">Analyze File</button>
-        <button onclick="analyzeLocal()">Analyze Local CSV</button>
-    </div>
+    <!-- Controls removed: page now auto-runs Agent 1 on load -->
     
     <div id="loading">Loading...</div>
     <div id="error" style="color: red;"></div>
@@ -25,7 +20,7 @@
     <div id="results"></div>
     
     <script>
-        const API = 'http://127.0.0.1:8000';
+        const API = '/api';
         
         async function analyzeFile() {
             const file = document.getElementById('fileInput').files[0];
@@ -63,26 +58,77 @@
             document.getElementById('loading').style.display = 'none';
         }
         
+        // On load: use cached results if present, otherwise auto-run analyzeLocal
+        window.addEventListener('load', () => {
+            const cachedData = sessionStorage.getItem('agent1Results');
+            if (cachedData) {
+                analysisData = JSON.parse(cachedData);
+                displayResults(analysisData);
+                return;
+            }
+
+            analyzeLocal();
+        });
+
+        function displayTopByCategory(topByCategory) {
+            if (!topByCategory) return;
+            const div = document.getElementById('results');
+            const section = document.createElement('div');
+            section.innerHTML = '<h2>Top By Category</h2>';
+
+            Object.entries(topByCategory).forEach(([category, items]) => {
+                const catDiv = document.createElement('div');
+                catDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+                const ul = document.createElement('ul');
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<b>${item.title}</b> — score: ${item.score} ${item.reason ? '— ' + item.reason : ''}`;
+                    ul.appendChild(li);
+                });
+                catDiv.appendChild(ul);
+                section.appendChild(catDiv);
+            });
+
+            div.appendChild(section);
+        }
+
         function displayResults(data) {
             const div = document.getElementById('results');
             div.innerHTML = '<h2>Results (Click idea to analyze with Agent 2)</h2>';
-            
-            data.analysis.ratings.sort((a, b) => b.overall - a.overall).forEach(idea => {
+
+            // Show top by category if available
+            displayTopByCategory(data.analysis.topByCategory || data.analysis.top_by_category || data.analysis.topByCategory);
+
+            // Normalize ratings array entries (support `scores` nesting)
+            const ratings = (data.analysis.ratings || []).map(r => {
+                const idea = { ...r };
+                if (r.scores) {
+                    idea.overall = r.scores.overall ?? r.overall;
+                    idea.feasibility = r.scores.feasibility ?? r.feasibility;
+                    idea.innovation = r.scores.innovation ?? r.innovation;
+                    idea.impact = r.scores.impact ?? r.impact;
+                    idea.marketability = r.scores.marketability ?? r.marketability;
+                    idea.clarity = r.scores.clarity ?? r.clarity;
+                }
+                return idea;
+            });
+
+            ratings.sort((a, b) => (b.overall || 0) - (a.overall || 0)).forEach(idea => {
                 const ideaDiv = document.createElement('div');
                 ideaDiv.className = 'idea';
                 ideaDiv.innerHTML = `
                     <h3>${idea.title}</h3>
-                    <p>${idea.summary}</p>
-                    <p><b>Overall: ${idea.overall}/10</b> | 
-                       Feasibility: ${idea.feasibility} | 
-                       Innovation: ${idea.innovation} | 
-                       Impact: ${idea.impact} | 
-                       Marketability: ${idea.marketability} | 
-                       Clarity: ${idea.clarity}</p>
+                    <p>${idea.summary || ''}</p>
+                    <p><b>Overall: ${idea.overall || 0}/10</b> | 
+                       Feasibility: ${idea.feasibility || 0} | 
+                       Innovation: ${idea.innovation || 0} | 
+                       Impact: ${idea.impact || 0} | 
+                       Marketability: ${idea.marketability || 0} | 
+                       Clarity: ${idea.clarity || 0}</p>
                 `;
                 ideaDiv.onclick = () => {
                     sessionStorage.setItem('idea', JSON.stringify({
-                        idea_index: idea.idea_index,
+                        idea_index: idea.ideaIndex || idea.idea_index,
                         title: idea.title,
                         scores: {
                             feasibility: idea.feasibility,

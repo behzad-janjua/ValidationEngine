@@ -1,7 +1,10 @@
 import json
 import requests
+import os
 
-with open('llm-config.json') as f:
+# Load config relative to this file so imports work when module is mounted
+config_path = os.path.join(os.path.dirname(__file__), 'llm-config.json')
+with open(config_path) as f:
     config = json.load(f)
 
 

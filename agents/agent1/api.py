@@ -3,10 +3,10 @@ import csv
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException
 import openpyxl
-from llm_service import analyze_ideas
+from .llm_service import analyze_ideas
 
 app = FastAPI()
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 

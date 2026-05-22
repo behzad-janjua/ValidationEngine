@@ -23,7 +23,7 @@
     <div id="results"></div>
     
     <script>
-        const API = 'http://127.0.0.1:8001';
+        const API = '/agent2';
         
         window.onload = async () => {
             const idea = JSON.parse(sessionStorage.getItem('idea'));
@@ -46,9 +46,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(idea)
                 });
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => '');
+                    throw new Error(`Request failed: ${res.status} ${res.statusText} ${txt}`);
+                }
                 const data = await res.json();
                 displayResults(data);
             } catch (e) {
+                console.error('Agent2 request error:', e);
                 document.getElementById('error').textContent = 'Error: ' + e.message;
                 document.getElementById('error').style.display = 'block';
             }
