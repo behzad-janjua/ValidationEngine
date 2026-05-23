@@ -4,7 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Barlow', 'system-ui', 'sans-serif'],
+        condensed: ['"Barlow Condensed"', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         fadeUp: {

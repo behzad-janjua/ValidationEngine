@@ -9,42 +9,46 @@ const STEPS = [
 function Logo() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
-            d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      </div>
-      <span className="font-semibold text-slate-900 tracking-tight">IdeaForge</span>
+      <span className="block w-[3px] h-5 bg-amber-400 flex-shrink-0" />
+      <span className="font-condensed font-bold text-zinc-100 tracking-tight text-xl uppercase leading-none">
+        IdeaForge
+      </span>
     </div>
   )
 }
 
 function StepIndicator({ currentStep }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {STEPS.map((s, i) => {
         const done = currentStep > s.step
         const active = currentStep === s.step
         return (
-          <div key={s.step} className="flex items-center gap-1">
-            <div className="flex items-center gap-1.5">
+          <div key={s.step} className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold
-                  transition-colors duration-200
-                  ${done ? 'bg-emerald-500 text-white' : active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}
+                className={`w-6 h-6 flex items-center justify-center text-xs font-bold font-condensed
+                  transition-all duration-200
+                  ${done
+                    ? 'bg-emerald-500 text-zinc-950'
+                    : active
+                    ? 'bg-amber-400 text-zinc-950'
+                    : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
+                  }`}
               >
                 {done
-                  ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
                   : s.step}
               </div>
-              <span className={`text-sm font-medium hidden sm:block transition-colors duration-200
-                ${active ? 'text-slate-900' : done ? 'text-emerald-600' : 'text-slate-400'}`}>
+              <span className={`text-xs font-semibold hidden sm:block tracking-wide transition-colors duration-200
+                ${active ? 'text-zinc-100' : done ? 'text-emerald-500' : 'text-zinc-600'}`}>
                 {s.label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={`w-6 h-px mx-0.5 transition-colors duration-200 ${done ? 'bg-emerald-300' : 'bg-slate-200'}`} />
+              <div className={`w-8 h-px mx-0.5 transition-colors duration-200 ${done ? 'bg-emerald-500/40' : 'bg-zinc-800'}`} />
             )}
           </div>
         )
@@ -58,14 +62,14 @@ export default function Layout({ children }) {
   const currentStep = STEPS.find(s => s.path === location.pathname)?.step ?? 1
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-[oklch(10%_0.01_255)] font-sans">
+      <header className="bg-[oklch(12%_0.012_255)] border-b border-zinc-800/80 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Logo />
           <StepIndicator currentStep={currentStep} />
         </div>
       </header>
-      <main className="max-w-6xl mx-auto px-5 py-8">
+      <main className="max-w-6xl mx-auto px-5 py-10">
         {children}
       </main>
     </div>
