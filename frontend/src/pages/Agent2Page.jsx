@@ -79,7 +79,7 @@ export default function Agent2Page() {
       })
       if (!res.ok) {
         const body = await res.text().catch(() => '')
-        throw new Error(`Agent 2 error ${res.status}${body ? ': ' + body.slice(0, 120) : ''}`)
+        throw new Error(`Step 2 error ${res.status}${body ? ': ' + body.slice(0, 120) : ''}`)
       }
       const data = await res.json()
       setResults(data)
@@ -117,7 +117,7 @@ export default function Agent2Page() {
           </div>
         </div>
 
-        {/* Score badges from Agent 1 */}
+        {/* Score badges from Step 1 */}
         {idea?.scores && (
           <div className="flex flex-wrap gap-2 animate-fade-in">
             <ScoreBadge label="Overall" value={idea.scores.overall} />

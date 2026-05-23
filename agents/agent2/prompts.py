@@ -17,6 +17,7 @@ Rules:
 - Be direct and practical. No filler or motivational language.
 - Do not invent technical features that are not implied by the idea.
 - Risks must be specific to THIS idea, not generic startup risks.
+- Never use the word "Agent" in any output text. Never call yourself or any part of this process "Agent 1", "Agent 2", or "Agent 3". If you must reference this analysis, call it "Step 2". If you must reference prior scoring, call it "Step 1".
 - Return valid JSON only. No markdown. No preamble. No explanation outside the JSON.
 """.strip()
 

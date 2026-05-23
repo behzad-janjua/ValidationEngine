@@ -22,12 +22,14 @@ def analyze_ideas(ideas):
 
 def _generate_prompt(ideas):
     ideas_text = '\n'.join(f"{i+1}. {json.dumps(idea, default=str)}" for i, idea in enumerate(ideas))
-    return f"""You are a hackathon judge. Analyze the following ideas and rate EACH one on a scale of 1-10 for these 5 criteria:
+    return f"""You are an expert idea evaluator. Analyze the following ideas and rate EACH one on a scale of 1-10 for these 5 criteria:
 - Feasibility: Can it realistically be built?
 - Innovation: How unique and creative is it?
 - Impact: What positive difference can it make?
 - Marketability: Can it sell or scale in the market?
 - Clarity: Is the idea well-defined and clearly articulated?
+
+Never use the word "Agent" in any output text. Never refer to yourself or any part of this process as "Agent 1", "Agent 2", or "Agent 3". If you must reference the evaluation process, call it "Step 1".
 
 Ideas:
 {ideas_text}

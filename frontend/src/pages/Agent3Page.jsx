@@ -96,7 +96,7 @@ export default function Agent3Page() {
       })
       if (!res.ok) {
         const body = await res.text().catch(() => '')
-        throw new Error(`Agent 3 error ${res.status}${body ? ': ' + body.slice(0, 200) : ''}`)
+        throw new Error(`Step 3 error ${res.status}${body ? ': ' + body.slice(0, 200) : ''}`)
       }
       setResults(await res.json())
       setPhase('results')
