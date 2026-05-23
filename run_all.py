@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from agents.agent1 import api as agent1_api
 from agents.agent2 import main as agent2_main
+from agents.agent3 import main as agent3_main
 
 
 def create_app():
@@ -36,6 +37,9 @@ def create_app():
 
     # Mount agent2 app at /agent2
     app.mount("/agent2", agent2_main.app)
+
+    # Mount agent3 app at /agent3
+    app.mount("/agent3", agent3_main.app)
 
     # Serve UI static files at root
     ui_dir = os.path.join(os.path.dirname(__file__), "UI")

@@ -10,7 +10,6 @@ from agents.agent2.service import (
     process_batch,
     run_agent2,
 )
-
 app = FastAPI(
     title="Agent Service 2 — Plan & Critique",
     description="Takes scored ideas from Agent 1 and returns MVP planning + critique.",

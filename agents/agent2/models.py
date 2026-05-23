@@ -36,12 +36,12 @@ class MVPPlan(BaseModel):
     phase_1: str
     phase_2: str
     phase_3: str
-    estimated_timeline: str            # e.g. "3–6 months"
+    estimated_timeline: str
     key_resources_needed: list[str]
 
 
 class Agent2Output(BaseModel):
-    """What Agent 2 returns — consumed by Agent 3 via to_agent3_planning()."""
+    """What Agent 2 returns."""
 
     idea_id: str
     title: str
@@ -66,21 +66,3 @@ class BatchResultItem(BaseModel):
     output: Agent2Output | None = None
     error: str | None = None
     skip_reason: str | None = None
-
-    def to_agent3_planning(self) -> dict:
-        """Convert to the Agent2Planning shape that Agent 3 expects."""
-        return {
-            "launch_plan": [
-                self.mvp_plan.phase_1,
-                self.mvp_plan.phase_2,
-                self.mvp_plan.phase_3,
-            ],
-            "positioning": self.positioning_statement,
-            "next_actions": self.next_actions,
-            "overall_viability": self.overall_viability,
-            "viability_reason": self.viability_reason,
-            "top_risks": self.critique.top_risks,
-            "ad_copy_suggestions": [],
-            "content_calendar": [],
-            "messaging": [],
-        }
