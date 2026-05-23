@@ -44,7 +44,7 @@ export default function IdeaCard({ idea, rank, isTop, style }) {
       onClick={handleClick}
       style={style}
       className={`
-        group relative cursor-pointer
+        group/card relative cursor-pointer
         card-hover
         opacity-0 animate-fade-up
         bg-zinc-900 border
@@ -94,11 +94,11 @@ export default function IdeaCard({ idea, rank, isTop, style }) {
 
         {/* Persistent CTA — always visible */}
         <div className="mt-5 pt-4 border-t border-zinc-800 flex items-center justify-between">
-          <span className="text-xs font-bold text-zinc-600 group-hover:text-amber-400 transition-colors duration-150 uppercase tracking-widest">
+          <span className="text-xs font-bold text-zinc-600 group-hover/card:text-amber-400 transition-colors duration-150 uppercase tracking-widest">
             Analyze
           </span>
           <svg
-            className="w-4 h-4 text-zinc-700 group-hover:text-amber-400 transition-all duration-150 group-hover:translate-x-0.5"
+            className="w-4 h-4 text-zinc-700 group-hover/card:text-amber-400 transition-all duration-150 group-hover/card:translate-x-0.5"
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

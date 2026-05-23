@@ -30,14 +30,14 @@ export default function ScoreBar({ label, score, max = 10, tooltip }) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center gap-2">
-        <div className="relative group flex items-center gap-1 min-w-0">
+        <div className="relative group/score flex items-center gap-1 min-w-0">
           <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide leading-none truncate">
             {label}
           </span>
           {tooltip && (
             <>
               <span className="text-[10px] text-zinc-700 cursor-help leading-none flex-shrink-0">?</span>
-              <div className="absolute bottom-full left-0 mb-2 px-2.5 py-2 bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 w-52 hidden group-hover:block z-20 pointer-events-none leading-relaxed shadow-xl">
+              <div className="absolute bottom-full left-0 mb-2 px-2.5 py-2 bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 w-52 hidden group-hover/score:block z-20 pointer-events-none leading-relaxed shadow-xl">
                 {tooltip}
               </div>
             </>
