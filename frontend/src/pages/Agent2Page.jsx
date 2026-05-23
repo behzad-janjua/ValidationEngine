@@ -136,7 +136,7 @@ export default function Agent2Page() {
               <span className="text-zinc-400 text-sm font-medium">Building MVP plan &amp; critique…</span>
             </div>
             <p className="text-xs text-zinc-600 max-w-xs text-center leading-relaxed">
-              Agent 2 will produce a 3-phase MVP plan, a positioning statement, and an honest critique of risks and assumptions.
+              A 3-phase MVP plan, positioning statement, and risk critique are being produced.
             </p>
           </div>
         )}

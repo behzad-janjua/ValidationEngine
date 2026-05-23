@@ -143,7 +143,7 @@ export default function Agent3Page() {
               <span className="text-zinc-400 text-sm font-medium">Running market analysis…</span>
             </div>
             <p className="text-xs text-zinc-600 max-w-xs text-center leading-relaxed">
-              Agent 3 synthesizes competitor landscape, GTM channels, growth experiments, and a final go/no-go verdict.
+              Competitor landscape, GTM channels, growth experiments, and a go/no-go verdict are being synthesized.
             </p>
           </div>
         )}
