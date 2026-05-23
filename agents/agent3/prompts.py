@@ -43,17 +43,108 @@ Constraints:
 User input:
 {user_input}
 
-Return:
-- scorecard
-- marketability_check
-- competitor_scan
-- gtm_channels
-- growth_experiments
-- advertisement_help
-- marketing_notifications
-- final_recommendation
-- reality_check
-- next_actions
+Return ONLY valid JSON matching this exact structure (no markdown, no preamble):
+{{
+  "scorecard": {{
+    "marketability": 0,
+    "speed_to_market": 0,
+    "differentiation": 0,
+    "distribution_fit": 0,
+    "monetization_confidence": 0,
+    "risk": 0
+  }},
+  "marketability_check": {{
+    "score": 0,
+    "target_customer": "string",
+    "pain_level": "high|medium|low",
+    "demand_signals": ["string"],
+    "adoption_blockers": ["string"],
+    "strongest_message_angle": "string"
+  }},
+  "competitor_scan": [
+    {{
+      "name": "string",
+      "category": "string",
+      "why_it_matters": "string",
+      "differentiation_opportunity": "string"
+    }}
+  ],
+  "gtm_channels": [
+    {{
+      "name": "string",
+      "priority": "high|medium|low",
+      "rationale": "string",
+      "first_test": "string",
+      "success_metric": "string",
+      "estimated_effort": "string"
+    }}
+  ],
+  "growth_experiments": [
+    {{
+      "name": "string",
+      "priority": "high|medium|low",
+      "hypothesis": "string",
+      "audience": "string",
+      "steps": ["string"],
+      "duration_days": 7,
+      "budget_usd": 0,
+      "success_metric": "string",
+      "decision_rule": "string"
+    }}
+  ],
+  "advertisement_help": [
+    {{
+      "channel": "string",
+      "headline": "string",
+      "primary_text": "string",
+      "cta": "string"
+    }}
+  ],
+  "marketing_notifications": [
+    {{
+      "channel": "email",
+      "type": "agent3_product_launch_email",
+      "audience": "string",
+      "subject": "string",
+      "body": "string",
+      "cta": "string",
+      "compliance_note": "string"
+    }},
+    {{
+      "channel": "sms",
+      "type": "agent3_product_launch_sms",
+      "audience": "string",
+      "body": "string",
+      "cta": "string",
+      "compliance_note": "string"
+    }}
+  ],
+  "final_recommendation": {{
+    "verdict": "launch|validate_first|pivot|park",
+    "confidence": 0,
+    "rationale": "string",
+    "launch_window_days": 14
+  }},
+  "reality_check": {{
+    "biggest_assumption": "string",
+    "fastest_validation_test": "string",
+    "kill_criteria": ["string"],
+    "key_risks": ["string"]
+  }},
+  "next_actions": ["string"],
+  "notes": ["string"]
+}}
+
+Rules:
+- All scorecard values must be integers 0-100. risk means launch risk (higher = riskier).
+- Provide 3-5 competitors in competitor_scan.
+- Provide 3-5 gtm_channels ordered by priority.
+- Provide 3-4 growth_experiments; duration_days 1-90, budget_usd >= 0.
+- Provide 3 advertisement_help items.
+- final_recommendation.confidence must be 0-100, launch_window_days 1-180.
+- verdict must be exactly one of: launch, validate_first, pivot, park.
+- priority must be exactly one of: high, medium, low.
+- channel must be exactly one of: email, sms.
 """
 
 

@@ -17,7 +17,7 @@ from agents.agent3.models import (
     OptOutRequest,
 )
 from agents.agent3.prompts import SYSTEM_PROMPT, build_agent3_prompt
-from agents.agent3.service import Agent3Analyzer
+from agents.agent3.service import Agent3Analyzer, run_agent3_llm
 
 app = FastAPI(
     title="Agent Service 3 - Market + Growth Agent",
@@ -38,6 +38,8 @@ def health() -> dict[str, str | bool]:
         "status": "ok",
         "service": "agent3-market-growth",
         "google_cloud_configured": bool(settings.google_cloud_api_key),
+        "gemini_model": settings.gemini_model,
+        "llm_enabled": bool(settings.google.api_key),
         "pingram_configured": bool(settings.pingram_api_key),
         "pingram_dry_run": settings.pingram_dry_run,
     }
@@ -45,6 +47,8 @@ def health() -> dict[str, str | bool]:
 
 @app.post("/analyze", response_model=Agent3Response)
 def analyze(request: Agent3Request) -> Agent3Response:
+    if settings.google.api_key:
+        return run_agent3_llm(request, settings)
     return analyzer.analyze(request)
 
 

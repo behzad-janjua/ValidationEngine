@@ -22,6 +22,9 @@ class Settings:
     pingram_sender_name: str | None
     pingram_sender_email: str | None
     pingram_dry_run: bool
+    gemini_model: str
+    gemini_max_output_tokens: int
+    gemini_temperature: float
 
     @property
     def google_cloud_api_key(self) -> str | None:
@@ -39,4 +42,7 @@ class Settings:
             pingram_sender_name=os.getenv("PINGRAM_SENDER_NAME"),
             pingram_sender_email=os.getenv("PINGRAM_SENDER_EMAIL"),
             pingram_dry_run=_bool_env("PINGRAM_DRY_RUN", True),
+            gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+            gemini_max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "8192")),
+            gemini_temperature=float(os.getenv("GEMINI_TEMPERATURE", "0.7")),
         )

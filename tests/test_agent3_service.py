@@ -26,6 +26,9 @@ def _test_settings() -> Settings:
         pingram_sender_name=None,
         pingram_sender_email=None,
         pingram_dry_run=True,
+        gemini_model="gemini-2.5-flash",
+        gemini_max_output_tokens=8192,
+        gemini_temperature=0.7,
     )
 
 

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from statistics import mean
+
+import google.generativeai as genai
+from pydantic import ValidationError
 
 from agents.agent3.models import (
     AdCreative,
@@ -22,6 +26,90 @@ from agents.agent3.models import (
     RecommendationVerdict,
     Scorecard,
 )
+from agents.agent3.prompts import SYSTEM_PROMPT, build_agent3_prompt
+
+
+class Agent3Error(Exception):
+    """Base error for agent 3 failures."""
+
+
+class Agent3ConfigurationError(Agent3Error):
+    """Raised when required runtime configuration is missing."""
+
+
+class Agent3ResponseParseError(Agent3Error):
+    """Raised when model output cannot be parsed into the required schema."""
+
+
+class Agent3ProviderError(Agent3Error):
+    """Raised when the upstream LLM provider call fails."""
+
+
+def _call_gemini(system_prompt: str, user_prompt: str, settings) -> str:
+    genai.configure(api_key=settings.google.api_key)
+    model = genai.GenerativeModel(
+        model_name=settings.gemini_model,
+        system_instruction=system_prompt,
+    )
+    try:
+        response = model.generate_content(
+            user_prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=settings.gemini_max_output_tokens,
+                temperature=settings.gemini_temperature,
+                response_mime_type="application/json",
+            ),
+        )
+    except Exception as err:
+        raise Agent3ProviderError(f"Gemini API call failed: {err}") from err
+
+    content = response.text
+    if not content:
+        raise Agent3ProviderError("Gemini returned an empty response")
+
+    return content
+
+
+def _extract_json_payload(raw_text: str) -> dict:
+    cleaned = raw_text.strip()
+
+    if cleaned.startswith("```"):
+        sections = cleaned.split("```")
+        if len(sections) >= 2:
+            cleaned = sections[1]
+        if cleaned.lower().startswith("json"):
+            cleaned = cleaned[4:]
+        cleaned = cleaned.strip()
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start == -1 or end == -1 or start >= end:
+            raise Agent3ResponseParseError("Model response did not contain valid JSON")
+        try:
+            return json.loads(cleaned[start : end + 1])
+        except json.JSONDecodeError as err:
+            raise Agent3ResponseParseError(f"Failed to parse model JSON: {err}") from err
+
+
+def run_agent3_llm(request: Agent3Request, settings) -> Agent3Response:
+    if not settings.google.api_key:
+        raise Agent3ConfigurationError("GEMINI_API_KEY is not configured")
+
+    raw_text = _call_gemini(SYSTEM_PROMPT, build_agent3_prompt(request), settings)
+    payload = _extract_json_payload(raw_text)
+
+    payload["row_id"] = request.idea.row_id
+    payload["generated_at"] = datetime.now(timezone.utc).isoformat()
+
+    try:
+        return Agent3Response.model_validate(payload)
+    except ValidationError as err:
+        raise Agent3ResponseParseError(
+            f"Model response failed schema validation: {err}"
+        ) from err
 
 
 @dataclass(frozen=True)
