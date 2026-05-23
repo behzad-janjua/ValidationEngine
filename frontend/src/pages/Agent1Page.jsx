@@ -35,7 +35,7 @@ function EmptyState({ onUpload }) {
 }
 
 export default function Agent1Page() {
-  const [phase, setPhase] = useState('loading')
+  const [phase, setPhase] = useState('idle')
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const abortRef = useRef(null)
@@ -45,37 +45,13 @@ export default function Agent1Page() {
     if (cached) {
       setData(JSON.parse(cached))
       setPhase('results')
-      return
     }
-    fetchLocal()
     return () => abortRef.current?.abort()
   }, [])
 
   useEffect(() => {
     if (data) sessionStorage.setItem('agent1Results', JSON.stringify(data))
   }, [data])
-
-  async function fetchLocal() {
-    abortRef.current?.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-
-    setPhase('loading')
-    setError(null)
-    try {
-      const res = await fetch('/api/analyze-local', { method: 'POST', signal: controller.signal })
-      if (!res.ok) {
-        const body = await res.text().catch(() => '')
-        throw new Error(`Server ${res.status}${body ? ': ' + body.slice(0, 120) : ''}`)
-      }
-      setData(await res.json())
-      setPhase('results')
-    } catch (e) {
-      if (e.name === 'AbortError') return
-      setError(e.message)
-      setPhase('error')
-    }
-  }
 
   async function uploadFile(file) {
     abortRef.current?.abort()
@@ -103,7 +79,8 @@ export default function Agent1Page() {
 
   function reanalyze() {
     sessionStorage.removeItem('agent1Results')
-    fetchLocal()
+    setData(null)
+    setPhase('idle')
   }
 
   const isLoading = phase === 'loading'
@@ -132,44 +109,92 @@ export default function Agent1Page() {
           </div>
           <div className="flex flex-col items-start sm:items-end gap-2 flex-shrink-0">
             <div className="flex items-center gap-2">
-              <label className={`cursor-pointer ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+              {phase === 'results' && (
+                <>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".csv,.xlsx,.xls"
+                      className="hidden"
+                      onChange={e => e.target.files[0] && uploadFile(e.target.files[0])}
+                    />
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 border border-zinc-700 bg-zinc-900 text-sm font-semibold text-zinc-300 cursor-pointer
+                      hover:border-amber-500/40 hover:text-zinc-100 btn-press transition-colors duration-150">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Upload new
+                    </span>
+                  </label>
+                  <button
+                    onClick={reanalyze}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm font-semibold hover:border-zinc-600 hover:text-zinc-100 btn-press"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Clear
+                  </button>
+                </>
+              )}
+              {isLoading && (
+                <span className="text-sm text-zinc-500 font-medium">Analyzing…</span>
+              )}
+            </div>
+            {phase === 'results' && (
+              <p className="text-[10px] text-zinc-700 leading-relaxed max-w-[240px]">
+                Upload .xlsx or .csv — one idea per row with title &amp; description columns
+              </p>
+            )}
+          </div>
+        </div>
+
+        {phase === 'idle' && (
+          <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+            <div className="w-full max-w-md text-center">
+              <div className="mb-8">
+                <div className="inline-flex items-center justify-center w-14 h-14 border border-zinc-800 bg-zinc-900 mb-6">
+                  <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h2 className="font-condensed font-bold text-zinc-100 text-2xl uppercase tracking-tight mb-2">
+                  Upload your ideas
+                </h2>
+                <p className="text-sm text-zinc-500 leading-relaxed max-w-xs mx-auto">
+                  Provide a spreadsheet with your ideas and get AI scores across feasibility, innovation, impact, marketability, and clarity.
+                </p>
+              </div>
+
+              <label className="group cursor-pointer block">
                 <input
                   type="file"
                   accept=".csv,.xlsx,.xls"
                   className="hidden"
-                  disabled={isLoading}
                   onChange={e => e.target.files[0] && uploadFile(e.target.files[0])}
                 />
-                <span className="inline-flex items-center gap-1.5 px-4 py-2.5 border border-zinc-700 bg-zinc-900 text-sm font-semibold text-zinc-300 cursor-pointer
-                  hover:border-amber-500/40 hover:text-zinc-100 btn-press transition-colors duration-150">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Upload
-                </span>
+                <div className="border-2 border-dashed border-zinc-800 group-hover:border-amber-500/40 px-8 py-10 transition-colors duration-200">
+                  <div className="flex flex-col items-center gap-3">
+                    <svg className="w-8 h-8 text-zinc-700 group-hover:text-amber-400/60 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span className="text-sm font-semibold text-zinc-400 group-hover:text-zinc-200 transition-colors duration-150">
+                      Click to browse
+                    </span>
+                    <span className="text-[11px] text-zinc-600">.xlsx or .csv — one idea per row with title &amp; description columns</span>
+                  </div>
+                </div>
               </label>
-              <button
-                onClick={reanalyze}
-                disabled={isLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-400 text-zinc-950 text-sm font-bold hover:bg-amber-300 btn-press disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Re-analyze
-              </button>
             </div>
-            {/* File format guidance */}
-            <p className="text-[10px] text-zinc-700 leading-relaxed max-w-[240px]">
-              Upload .xlsx or .csv — one idea per row with title &amp; description columns
-            </p>
           </div>
-        </div>
+        )}
 
         {phase === 'loading' && <LoadingState message="Evaluating your ideas…" />}
-        {phase === 'error' && <ErrorBlock message={error} onRetry={fetchLocal} />}
+        {phase === 'error' && <ErrorBlock message={error} onRetry={() => setPhase('idle')} />}
 
         {phase === 'results' && (
           <>
