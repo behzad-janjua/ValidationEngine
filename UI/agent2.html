@@ -1,67 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Agent 2 - Plan & Critique</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        button { padding: 10px; margin: 5px; cursor: pointer; }
-        .section { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
-        #loading, #error { display: none; }
-        ul { margin: 10px 0; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      button {
+        padding: 10px;
+        margin: 5px;
+        cursor: pointer;
+      }
+      .section {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin: 10px 0;
+      }
+      #loading,
+      #error {
+        display: none;
+      }
+      ul {
+        margin: 10px 0;
+      }
     </style>
-</head>
-<body>
-    <button onclick="window.location.href='index.html'">← Back to Agent 1</button>
-    
+  </head>
+  <body>
+    <button onclick="window.location.href = 'index.html'">
+      ← Back to Agent 1
+    </button>
+
     <h1>Agent 2: Plan & Critique</h1>
-    
+
     <div id="ideaInfo"></div>
-    
+
     <div id="loading">Analyzing with Agent 2...</div>
-    <div id="error" style="color: red;"></div>
-    
+    <div id="error" style="color: red"></div>
+
     <div id="results"></div>
-    
+
     <script>
-        const API = '/agent2';
-        
-        window.onload = async () => {
-            const idea = JSON.parse(sessionStorage.getItem('idea'));
-            if (!idea) {
-                alert('No idea selected');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            document.getElementById('ideaInfo').innerHTML = `
+      const API = '/agent2';
+
+      window.onload = async () => {
+        const idea = JSON.parse(sessionStorage.getItem('idea'));
+        if (!idea) {
+          alert('No idea selected');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        document.getElementById('ideaInfo').innerHTML = `
                 <h2>${idea.title}</h2>
                 <p>Overall Score: ${idea.scores.overall}/10</p>
             `;
-            
-            document.getElementById('loading').style.display = 'block';
-            
-            try {
-                const res = await fetch(`${API}/plan-and-critique`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(idea)
-                });
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => '');
-                    throw new Error(`Request failed: ${res.status} ${res.statusText} ${txt}`);
-                }
-                const data = await res.json();
-                displayResults(data);
-            } catch (e) {
-                console.error('Agent2 request error:', e);
-                document.getElementById('error').textContent = 'Error: ' + e.message;
-                document.getElementById('error').style.display = 'block';
-            }
-            document.getElementById('loading').style.display = 'none';
-        };
-        
-        function displayResults(data) {
-            document.getElementById('results').innerHTML = `
+
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+          const res = await fetch(`${API}/plan-and-critique`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(idea),
+          });
+          if (!res.ok) {
+            const txt = await res.text().catch(() => '');
+            throw new Error(
+              `Request failed: ${res.status} ${res.statusText} ${txt}`,
+            );
+          }
+          const data = await res.json();
+          displayResults(data);
+        } catch (e) {
+          console.error('Agent2 request error:', e);
+          document.getElementById('error').textContent =
+            'Error: ' + e.message;
+          document.getElementById('error').style.display = 'block';
+        }
+        document.getElementById('loading').style.display = 'none';
+      };
+
+      function displayResults(data) {
+        // Save agent2 output so agent3.html can use it
+        sessionStorage.setItem('agent2Output', JSON.stringify(data));
+
+        document.getElementById('results').innerHTML = `
                 <div class="section">
                     <h3>Viability: ${data.overall_viability}</h3>
                     <p>${data.viability_reason}</p>
@@ -79,25 +103,33 @@
                     <p><b>Phase 3:</b> ${data.mvp_plan.phase_3}</p>
                     <p><b>Timeline:</b> ${data.mvp_plan.estimated_timeline}</p>
                     <p><b>Resources:</b></p>
-                    <ul>${data.mvp_plan.key_resources_needed.map(r => `<li>${r}</li>`).join('')}</ul>
+                    <ul>${data.mvp_plan.key_resources_needed.map((r) => `<li>${r}</li>`).join('')}</ul>
                 </div>
                 
                 <div class="section">
                     <h3>Critique</h3>
                     <p><b>Top Risks:</b></p>
-                    <ul>${data.critique.top_risks.map(r => `<li>${r}</li>`).join('')}</ul>
+                    <ul>${data.critique.top_risks.map((r) => `<li>${r}</li>`).join('')}</ul>
                     <p><b>Weaknesses:</b></p>
-                    <ul>${data.critique.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
+                    <ul>${data.critique.weaknesses.map((w) => `<li>${w}</li>`).join('')}</ul>
                     <p><b>Assumptions to Validate:</b></p>
-                    <ul>${data.critique.assumptions_to_validate.map(a => `<li>${a}</li>`).join('')}</ul>
+                    <ul>${data.critique.assumptions_to_validate.map((a) => `<li>${a}</li>`).join('')}</ul>
                 </div>
                 
                 <div class="section">
                     <h3>Next Actions</h3>
-                    <ul>${data.next_actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                    <ul>${data.next_actions.map((a) => `<li>${a}</li>`).join('')}</ul>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button
+                        onclick="window.location.href='agent3.html'"
+                        style="padding: 14px 28px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                        Proceed to Agent 3: Market &amp; Growth Analysis →
+                    </button>
                 </div>
             `;
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
