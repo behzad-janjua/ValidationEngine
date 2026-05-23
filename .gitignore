@@ -7,3 +7,9 @@ venv/
 requirements.txt
 *.egg-info/
 
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+.vscode/
+

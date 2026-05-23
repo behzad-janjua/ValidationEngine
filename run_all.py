@@ -41,8 +41,8 @@ def create_app():
     # Mount agent3 app at /agent3
     app.mount("/agent3", agent3_main.app)
 
-    # Serve UI static files at root
-    ui_dir = os.path.join(os.path.dirname(__file__), "UI")
+    # Serve React build from frontend/dist (run: cd frontend && npm run build)
+    ui_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")
     app.mount("/", StaticFiles(directory=ui_dir, html=True), name="ui")
 
     return app
