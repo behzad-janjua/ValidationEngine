@@ -80,9 +80,9 @@ export default function IdeaCard({ idea, rank, isTop, style }) {
           <ScoreBar label="Clarity" score={idea.clarity ?? 0} />
         </div>
 
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <span className="text-xs font-medium text-blue-600">
-            Analyze with Agent 2
+            Analyze idea
           </span>
           <svg
             className="w-4 h-4 text-blue-400 transition-transform duration-150 group-hover:translate-x-0.5"

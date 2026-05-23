@@ -32,15 +32,13 @@ function ViabilityBadge({ level }) {
   )
 }
 
-function Section({ title, icon, accent = 'blue', children }) {
+function Section({ title, accent = 'blue', delay = 0, children }) {
   const borders = { blue: 'border-l-blue-400', green: 'border-l-emerald-400', red: 'border-l-red-400', amber: 'border-l-amber-400' }
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden opacity-0 animate-fade-up`}>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden opacity-0 animate-fade-up"
+      style={{ animationDelay: `${delay}ms` }}>
       <div className={`border-l-4 ${borders[accent]} px-6 py-5`}>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-base">{icon}</span>
-          <h3 className="font-semibold text-slate-900">{title}</h3>
-        </div>
+        <h3 className="font-semibold text-slate-900 mb-4">{title}</h3>
         {children}
       </div>
     </div>
@@ -146,7 +144,7 @@ export default function Agent2Page() {
         {phase === 'loading' && (
           <div className="flex items-center gap-3 py-16 justify-center animate-fade-in">
             <LoadingSpinner />
-            <span className="text-slate-500 text-sm font-medium">Running Agent 2 analysis…</span>
+            <span className="text-slate-500 text-sm font-medium">Analyzing plan &amp; critique…</span>
           </div>
         )}
 
@@ -155,20 +153,20 @@ export default function Agent2Page() {
         {phase === 'results' && results && (
           <div className="space-y-4">
             {/* Viability */}
-            <Section title="Viability Assessment" icon="📊" accent="green" style={{ animationDelay: '0ms' }}>
+            <Section title="Viability Assessment" accent="green" delay={0}>
               <ViabilityBadge level={results.overall_viability} />
               <p className="mt-3 text-sm text-slate-600 leading-relaxed">{results.viability_reason}</p>
             </Section>
 
             {/* Positioning */}
-            <Section title="Positioning Statement" icon="🎯" accent="blue" style={{ animationDelay: '60ms' }}>
+            <Section title="Positioning Statement" accent="blue" delay={60}>
               <blockquote className="border-l-4 border-blue-200 pl-4 py-1 text-slate-700 text-sm leading-relaxed italic">
                 {results.positioning_statement}
               </blockquote>
             </Section>
 
             {/* MVP Plan */}
-            <Section title="MVP Plan" icon="🗺️" accent="blue" style={{ animationDelay: '120ms' }}>
+            <Section title="MVP Plan" accent="blue" delay={120}>
               <div className="space-y-3">
                 {[
                   { label: 'Phase 1 — Foundation', content: results.mvp_plan?.phase_1 },
@@ -211,14 +209,14 @@ export default function Agent2Page() {
             </Section>
 
             {/* Critique */}
-            <Section title="Critique" icon="⚠️" accent="red" style={{ animationDelay: '180ms' }}>
+            <Section title="Critique" accent="red" delay={180}>
               <RiskList items={results.critique?.top_risks} label="Top Risks" />
               <RiskList items={results.critique?.weaknesses} label="Weaknesses" />
               <RiskList items={results.critique?.assumptions_to_validate} label="Assumptions to Validate" />
             </Section>
 
             {/* Next Actions */}
-            <Section title="Next Actions" icon="✅" accent="green" style={{ animationDelay: '240ms' }}>
+            <Section title="Next Actions" accent="green" delay={240}>
               <ul className="space-y-2">
                 {(results.next_actions || []).map((action, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">

@@ -6,10 +6,10 @@ import { LoadingSpinner } from '../components/LoadingState'
 import ErrorBlock from '../components/ErrorBlock'
 
 const VERDICT_CONFIG = {
-  launch: { label: 'Launch', bg: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', icon: '🚀' },
-  validate_first: { label: 'Validate First', bg: 'bg-blue-500', light: 'bg-blue-50 border-blue-200', text: 'text-blue-700', icon: '🔬' },
-  pivot: { label: 'Pivot', bg: 'bg-amber-500', light: 'bg-amber-50 border-amber-200', text: 'text-amber-700', icon: '🔄' },
-  park: { label: 'Park', bg: 'bg-slate-400', light: 'bg-slate-50 border-slate-200', text: 'text-slate-600', icon: '⏸️' },
+  launch: { label: 'Launch', bg: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' },
+  validate_first: { label: 'Validate First', bg: 'bg-blue-500', light: 'bg-blue-50 border-blue-200', text: 'text-blue-700' },
+  pivot: { label: 'Pivot', bg: 'bg-amber-500', light: 'bg-amber-50 border-amber-200', text: 'text-amber-700' },
+  park: { label: 'Park', bg: 'bg-slate-400', light: 'bg-slate-50 border-slate-200', text: 'text-slate-600' },
 }
 
 const PRIORITY_BADGE = {
@@ -18,16 +18,13 @@ const PRIORITY_BADGE = {
   low: 'bg-slate-50 text-slate-500 border-slate-200',
 }
 
-function Section({ title, icon, accent = 'blue', delay = 0, children }) {
+function Section({ title, accent = 'blue', delay = 0, children }) {
   const borders = { blue: 'border-l-blue-400', green: 'border-l-emerald-400', red: 'border-l-red-400', amber: 'border-l-amber-400', slate: 'border-l-slate-300' }
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden opacity-0 animate-fade-up"
       style={{ animationDelay: `${delay}ms` }}>
       <div className={`border-l-4 ${borders[accent]} px-6 py-5`}>
-        <div className="flex items-center gap-2 mb-4">
-          <span>{icon}</span>
-          <h3 className="font-semibold text-slate-900">{title}</h3>
-        </div>
+        <h3 className="font-semibold text-slate-900 mb-4">{title}</h3>
         {children}
       </div>
     </div>
@@ -144,7 +141,7 @@ export default function Agent3Page() {
         {phase === 'loading' && (
           <div className="flex items-center gap-3 py-16 justify-center animate-fade-in">
             <LoadingSpinner />
-            <span className="text-slate-500 text-sm font-medium">Running Agent 3 market analysis…</span>
+            <span className="text-slate-500 text-sm font-medium">Running market analysis…</span>
           </div>
         )}
 
@@ -160,7 +157,6 @@ export default function Agent3Page() {
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Final Recommendation</p>
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{verdict.icon}</span>
                       <span className={`text-3xl font-bold ${verdict.text}`}>{verdict.label}</span>
                     </div>
                     <p className="mt-2 text-sm text-slate-600 leading-relaxed max-w-xl">
@@ -186,7 +182,7 @@ export default function Agent3Page() {
             )}
 
             {/* Scorecard */}
-            <Section title="Scorecard" icon="📈" accent="blue" delay={60}>
+            <Section title="Scorecard" accent="blue" delay={60}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
                 <ScoreBar label="Marketability" score={results.scorecard?.marketability} max={100} />
                 <ScoreBar label="Speed to Market" score={results.scorecard?.speed_to_market} max={100} />
@@ -199,7 +195,7 @@ export default function Agent3Page() {
             </Section>
 
             {/* Marketability */}
-            <Section title="Marketability Check" icon="🎯" accent="blue" delay={120}>
+            <Section title="Marketability Check" accent="blue" delay={120}>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                 <div className="bg-slate-50 rounded-lg px-3 py-2.5">
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-0.5">Target Customer</p>
@@ -226,7 +222,8 @@ export default function Agent3Page() {
                   <ul className="space-y-1">
                     {results.marketability_check.demand_signals.map((s, i) => (
                       <li key={i} className="flex gap-2 text-sm text-slate-600">
-                        <span className="text-emerald-400 shrink-0">✓</span> {s}
+                        <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0 mt-1" />
+                {s}
                       </li>
                     ))}
                   </ul>
@@ -238,7 +235,8 @@ export default function Agent3Page() {
                   <ul className="space-y-1">
                     {results.marketability_check.adoption_blockers.map((b, i) => (
                       <li key={i} className="flex gap-2 text-sm text-slate-600">
-                        <span className="text-red-400 shrink-0">✗</span> {b}
+                        <span className="w-3 h-3 rounded-full bg-red-400 shrink-0 mt-1" />
+                {b}
                       </li>
                     ))}
                   </ul>
@@ -248,7 +246,7 @@ export default function Agent3Page() {
 
             {/* Competitors */}
             {results.competitor_scan?.length > 0 && (
-              <Section title="Competitor Landscape" icon="🔍" accent="slate" delay={180}>
+              <Section title="Competitor Landscape" accent="slate" delay={180}>
                 <div className="space-y-3">
                   {results.competitor_scan.map((c, i) => (
                     <div key={i} className="bg-slate-50 rounded-lg px-4 py-3">
@@ -270,7 +268,7 @@ export default function Agent3Page() {
 
             {/* GTM Channels */}
             {results.gtm_channels?.length > 0 && (
-              <Section title="Go-to-Market Channels" icon="📣" accent="blue" delay={240}>
+              <Section title="Go-to-Market Channels" accent="blue" delay={240}>
                 <div className="space-y-3">
                   {results.gtm_channels.map((ch, i) => (
                     <div key={i} className="bg-slate-50 rounded-lg px-4 py-3">
@@ -300,7 +298,7 @@ export default function Agent3Page() {
 
             {/* Growth Experiments */}
             {results.growth_experiments?.length > 0 && (
-              <Section title="Growth Experiments" icon="🧪" accent="amber" delay={300}>
+              <Section title="Growth Experiments" accent="amber" delay={300}>
                 <div className="space-y-3">
                   {results.growth_experiments.map((exp, i) => (
                     <div key={i} className="bg-slate-50 rounded-lg px-4 py-3">
@@ -342,7 +340,7 @@ export default function Agent3Page() {
 
             {/* Ad Creatives */}
             {results.advertisement_help?.length > 0 && (
-              <Section title="Ad Creatives" icon="📱" accent="blue" delay={360}>
+              <Section title="Ad Creatives" accent="blue" delay={360}>
                 <div className="space-y-3">
                   {results.advertisement_help.map((ad, i) => (
                     <div key={i} className="bg-slate-50 rounded-lg px-4 py-3">
@@ -360,13 +358,12 @@ export default function Agent3Page() {
 
             {/* Marketing Notifications */}
             {results.marketing_notifications?.length > 0 && (
-              <Section title="Launch Notification Drafts" icon="📧" accent="green" delay={420}>
+              <Section title="Launch Notification Drafts" accent="green" delay={420}>
                 <div className="space-y-4">
                   {results.marketing_notifications.map((n, i) => (
                     <div key={i} className={`rounded-lg border overflow-hidden ${n.channel === 'email' ? 'border-slate-200' : 'border-slate-200'}`}>
                       <div className={`px-4 py-2 flex items-center justify-between ${n.channel === 'email' ? 'bg-slate-50 border-b border-slate-200' : 'bg-slate-50 border-b border-slate-200'}`}>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">{n.channel === 'email' ? '✉️' : '💬'}</span>
                           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{n.channel}</span>
                         </div>
                         <span className="text-xs text-slate-400">{n.audience}</span>
@@ -398,7 +395,7 @@ export default function Agent3Page() {
             )}
 
             {/* Reality Check */}
-            <Section title="Reality Check" icon="🔬" accent="red" delay={480}>
+            <Section title="Reality Check" accent="red" delay={480}>
               <div className="space-y-3">
                 <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3">
                   <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Biggest Assumption</p>
@@ -414,7 +411,8 @@ export default function Agent3Page() {
                     <ul className="space-y-1.5">
                       {results.reality_check.kill_criteria.map((c, i) => (
                         <li key={i} className="flex gap-2 text-sm text-slate-700 bg-slate-50 rounded-lg px-3 py-2">
-                          <span className="text-red-400 shrink-0">✗</span> {c}
+                          <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5" />
+                          {c}
                         </li>
                       ))}
                     </ul>
@@ -426,7 +424,8 @@ export default function Agent3Page() {
                     <ul className="space-y-1.5">
                       {results.reality_check.key_risks.map((r, i) => (
                         <li key={i} className="flex gap-2 text-sm text-slate-700 bg-slate-50 rounded-lg px-3 py-2">
-                          <span className="text-amber-400 shrink-0">⚠</span> {r}
+                          <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5" />
+                          {r}
                         </li>
                       ))}
                     </ul>
@@ -437,7 +436,7 @@ export default function Agent3Page() {
 
             {/* Next Actions */}
             {results.next_actions?.length > 0 && (
-              <Section title="Next Actions" icon="✅" accent="green" delay={540}>
+              <Section title="Next Actions" accent="green" delay={540}>
                 <ul className="space-y-2">
                   {results.next_actions.map((action, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
