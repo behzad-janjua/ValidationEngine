@@ -1,11 +1,17 @@
 import json
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Load config relative to this file so imports work when module is mounted
 config_path = os.path.join(os.path.dirname(__file__), 'llm-config.json')
 with open(config_path) as f:
     config = json.load(f)
+
+# API key: env var takes precedence over config file placeholder
+_api_key = os.environ.get("GEMINI_API_KEY") or config.get("apiKey", "")
 
 
 def analyze_ideas(ideas):
@@ -66,7 +72,7 @@ def _call_llm(prompt):
             "responseMimeType": "application/json"
         }
     }
-    r = requests.post(f"{config['apiUrl']}?key={config['apiKey']}", json=payload)
+    r = requests.post(f"{config['apiUrl']}?key={_api_key}", json=payload)
     r.raise_for_status()
     return r.json()["candidates"][0]["content"]["parts"][0]["text"]
 
